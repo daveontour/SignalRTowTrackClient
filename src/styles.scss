@@ -1,1 +1,44 @@
 /* You can add global styles to this file, and also import other style files */
+@import "../node_modules/ag-grid-community/src/styles/ag-grid.scss";
+@import "../node_modules/ag-grid-community/src/styles/ag-theme-alpine/sass/ag-theme-alpine-mixin.scss";
+@import "../node_modules/ag-grid-community/src/styles/ag-theme-alpine-dark/sass/ag-theme-alpine-dark-mixin.scss";
+
+.ag-theme-alpine-dark {
+    @include ag-theme-alpine-dark();
+}
+
+.rag-red {
+    background-color: lightcoral;
+  }
+  .rag-green {
+    background-color: lightgreen;
+  }
+  .rag-amber {
+    background-color: lightsalmon;
+  }
+  
+  .rag-red-outer{
+    background-color: lightcoral !important;
+  }
+  
+  .rag-green-outer{
+    background-color: lightgreen;
+  }
+  
+  .rag-amber-outer {
+    background-color: lightsalmon;
+  }
+
+  .test {
+    background-color: yellow;
+    color:black;
+  }
+  .testalert {
+    background-color: lightsalmon;
+    color:black;
+  }
+
+  .testok {
+    background-color: lightgreen;
+    color:black;
+  }
