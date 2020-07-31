@@ -83,7 +83,7 @@ export class AppComponent implements OnInit {
     { headerName: 'Act. End', field: 'ActualEnd', width: 100, enableCellChangeFlash: true, valueFormatter: this.timeFormatter },
     { headerName: 'A/C Type', field: 'AircraftType', width: 100, enableCellChangeFlash: true, },
     { headerName: 'A/C Rego', field: 'AircraftRegistration', width: 100, enableCellChangeFlash: true, },
-    { headerName: 'Flights', field: 'Flights', tooltipField: 'Flights', }
+    { headerName: 'Flights', field: 'Flights', tooltipField: 'Flights', flex: 3 }
   ];
   defaultColDef = {
     editable: false,
@@ -93,7 +93,8 @@ export class AppComponent implements OnInit {
     filter: true,
     resizable: true,
     tooltipComponent: 'customTooltip',
-    enableCellChangeFlash: true
+    enableCellChangeFlash: true,
+    cellFlashDelay: 3000
   };
 
   constructor(
@@ -108,7 +109,7 @@ export class AppComponent implements OnInit {
     };
     this.frameworkComponents = { customTooltip: CustomTooltip };
     this.hubService.connectionEstablished.subscribe((connected: boolean) => {
-      console.log('Hub Ready');
+      this.status = 'Connected';
       this.hubService.getTows(this.offsetFrom, this.offsetTo);
     });
   }
