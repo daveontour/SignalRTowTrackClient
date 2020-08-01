@@ -14,6 +14,7 @@ import { ChangeDetectorRef } from '@angular/core';
 })
 export class AppComponent implements OnInit {
 
+  public displayMode = 'Rolling';
   public rowData: any;
   public getRowNodeId: any;
   public offsetFrom = -120;
@@ -62,8 +63,8 @@ export class AppComponent implements OnInit {
         return { 'background-color': 'gray' };
       }
     },
-    { headerName: 'From', field: 'From', width: 80, enableCellChangeFlash: true },
-    { headerName: 'To', field: 'To', width: 80, enableCellChangeFlash: true },
+    { headerName: 'From', field: 'From', width: 80, enableCellChangeFlash: true, flex: 1 },
+    { headerName: 'To', field: 'To', width: 80, enableCellChangeFlash: true, flex: 1 },
     {
       headerName: 'Start', field: 'ScheduledStart', width: 120, sortable: true, enableCellChangeFlash: true,
       valueFormatter: this.timeFormatter, comparator: this.timeComparator
@@ -301,29 +302,35 @@ export class AppComponent implements OnInit {
   }
   transformRow(row: any): any {
 
-    if (row.ArrivalFlightDescriptor !== 'null') {
+    if (row.ArrivalFlightDescriptor !== null) {
       row.Arrival = row.ArrivalFlightDescriptor.replace('@', ' ');
       row.Arrival = row.Arrival.replace('T', ' ');
       row.Arrival = row.Arrival.substring(0, row.Arrival.length - 1);
+
     } else {
       row.Arrival = '-';
+      row.ArrivalAirlineCode = '';
+      row.ArrivalFltNum = '';
     }
 
-    if (row.DepartureFlightDescriptor !== 'null') {
+    if (row.DepartureFlightDescriptor !== null) {
       row.Departure = row.DepartureFlightDescriptor.replace('@', ' ');
       row.Departure = row.Departure.replace('T', ' ');
       row.Departure = row.Departure.substring(0, row.Departure.length - 1);
+
     } else {
       row.Departure = '-';
+      row.DepartureAirlineCode = '';
+      row.DepartureFltNum = '';
     }
 
     row.Flights = row.ArrivalAirlineCode + row.ArrivalFltNum + '/' + row.DepartureAirlineCode + row.DepartureFltNum;
 
 
-    if (row.AircraftRegistration === 'null') {
+    if (row.AircraftRegistration === null) {
       row.AircraftRegistration = '-';
     }
-    if (row.AircraftType === 'null') {
+    if (row.AircraftType === null) {
       row.AircraftType = '-';
     }
     if (row.ActualStart === '0001-01-01T00:00:00') {
@@ -356,6 +363,7 @@ export class AppComponent implements OnInit {
 
   setCurrentRange(): any {
     this.globals.rangeMode = 'offset';
+    this.displayMode = 'Rolling';
     this.globals.offsetFrom = this.offsetFrom;
     this.globals.offsetTo = this.offsetTo;
     this.globals.zeroTime = moment().add(this.offsetFrom, 'minutes');
@@ -365,6 +373,7 @@ export class AppComponent implements OnInit {
 
   setSelectedRange(): any {
     this.globals.rangeMode = 'range';
+    this.displayMode = 'Fixed';
 
     const mss = this.rangeDate + ' ' + this.rangeFrom;
     const ms = moment(mss, 'YYYY-MM-DD HH:mm');

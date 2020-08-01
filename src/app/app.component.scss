@@ -2,14 +2,21 @@
     justify-content: center;
  }
 
- .Connected {
-    color: lime;
-  }
-  
-  .Connecting {
-    color: yellow;
-  }
-  
+ .Rolling {
+  color: lime;
+}
+
+.Fixed {
+  color: yellow;
+}
+.Connected {
+  color: lime;
+}
+
+.Connecting {
+  color: yellow;
+}
+
   .Disconnected {
     color: red;
   }
