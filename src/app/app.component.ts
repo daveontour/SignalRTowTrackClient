@@ -33,7 +33,7 @@ export class AppComponent implements OnInit {
   public lastUpdate: string;
   public gridApi: any;
   public numRows: any;
-  public status: string;
+  public status = 'Connecting';
 
   public columnDefs = [
     { headerName: 'Tow ID', field: 'TowingID', width: 120, sortable: true, hide: false },
@@ -209,24 +209,23 @@ export class AppComponent implements OnInit {
 
   private subscribeToEvents(): void {
     const that = this;
-    this.hubService.addReceived.subscribe((message: string) => {
-      console.log(message);
-    });
     this.hubService.deleteReceived.subscribe((message: string) => {
-      console.log(message);
       that.deleteGridRow(message);
     });
     this.hubService.addReceived.subscribe((message: string) => {
-      console.log(message);
       that.addGridRow(message);
     });
     this.hubService.updateReceived.subscribe((message: string) => {
-      console.log(message);
       that.updateGridRow(message);
     });
     this.hubService.towsReceived.subscribe((message: string) => {
-      console.log(message);
       that.loadGrid(message);
+    });
+    this.hubService.connectionError.subscribe((message: string) => {
+      that.status = 'Disconnected';
+    });
+    this.hubService.connectionEstablishing.subscribe((message: string) => {
+      that.status = 'Connecting';
     });
   }
 
@@ -380,7 +379,6 @@ export class AppComponent implements OnInit {
 
 
     this.globals.zeroTime = moment().add(this.offsetFrom, 'minutes');
-    // this.director.minuteTick();
 
     this.hubService.getTowsOneOff(this.offsetFrom, this.offsetTo);
 
