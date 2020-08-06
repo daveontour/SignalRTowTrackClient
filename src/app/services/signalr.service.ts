@@ -97,6 +97,24 @@ export class SignalRService {
   });
   }
 
+  public updateActualStart(start: any, id: any): any {
+    const that = this;
+    this.proxy.invoke('UpdateActualStart', start, id).done(function(tows): any {
+
+    }).fail(function (error) {
+      console.log('Invocation of updateActual Start failed. Error: ' + error);
+  });
+  }
+
+  public updateActualEnd(end: any, id: any): any {
+    const that = this;
+    this.proxy.invoke('UpdateActualEnd', end, id).done(function(tows): any {
+
+    }).fail(function (error) {
+      console.log('Invocation of updateActualEnd failed. Error: ' + error);
+  });
+  }
+
   public getTowsOneOff(from: any, to: any): any {
     const that = this;
     this.proxy.invoke('getTowsOneOff', from, to).done(function(tows): any {

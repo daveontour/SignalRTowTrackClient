@@ -6,6 +6,7 @@ import * as moment from 'moment';
 import { HttpClient } from '@angular/common/http';
 import { CustomTooltip } from './custom-tooltip.component';
 import { ChangeDetectorRef } from '@angular/core';
+import { ValueCache } from 'ag-grid-community';
 
 @Component({
   selector: 'app-root',
@@ -24,6 +25,9 @@ export class AppComponent implements OnInit {
   public rangeTo: number;
   public rangeDate: any;
 
+  public editorDate: any;
+  public editorTime: any;
+
   public showOnBlocks = true;
   public showDateRange = true;
   public enableDisplaySwitcher = false;
@@ -35,6 +39,7 @@ export class AppComponent implements OnInit {
   public gridApi: any;
   public numRows: any;
   public status = 'Connecting';
+  public components;
 
   public columnDefs = [
     { headerName: 'Tow ID', field: 'TowingID', width: 120, sortable: true, hide: false },
@@ -74,14 +79,18 @@ export class AppComponent implements OnInit {
       valueFormatter: this.timeFormatter, comparator: this.timeComparator
     },
     {
-      headerName: 'Act. Start', field: 'ActualStart', width: 100, enableCellChangeFlash: true,
-      valueFormatter: this.timeFormatter, cellStyle(params): any {
-        if (params.data.Status === 'COMPLETED_DQM_ISSUES' && params.data.ActualStart === '-') {
-          return { 'background-color': 'lightgray', color: 'black' };
-        }
-      }
+      headerName: 'Act. Start', field: 'ActualStart', width: 100, enableCellChangeFlash: true, editable: true, cellEditor: 'yearCellEditor',
+      valueFormatter: this.timeFormatter
+      // , cellStyle(params): any {
+      //   if (params.data.Status === 'COMPLETED_DQM_ISSUES' && params.data.ActualStart === '-') {
+      //     return { 'background-color': 'lightgray', color: 'black' };
+      //   }
+      // }
     },
-    { headerName: 'Act. End', field: 'ActualEnd', width: 100, enableCellChangeFlash: true, valueFormatter: this.timeFormatter },
+    {
+      headerName: 'Act. End', field: 'ActualEnd', width: 100, enableCellChangeFlash: true, valueFormatter: this.timeFormatter,
+      editable: true, cellEditor: 'yearCellEditor',
+    },
     { headerName: 'A/C Type', field: 'AircraftType', width: 100, enableCellChangeFlash: true, },
     { headerName: 'A/C Rego', field: 'AircraftRegistration', width: 100, enableCellChangeFlash: true, },
     { headerName: 'Flights', field: 'Flights', tooltipField: 'Flights', flex: 3 }
@@ -113,6 +122,8 @@ export class AppComponent implements OnInit {
       this.status = 'Connected';
       this.hubService.getTows(this.offsetFrom, this.offsetTo);
     });
+
+    this.components = { yearCellEditor: getYearCellEditor() };
   }
 
   statusComparator(status1: string, status2: string): any {
@@ -186,6 +197,9 @@ export class AppComponent implements OnInit {
     if (params.value === '-') {
       return '-';
     }
+    if (params.value === null) {
+      return '-';
+    }
     const m = moment(params.value);
     return m.format('HH:mm');
   }
@@ -233,6 +247,16 @@ export class AppComponent implements OnInit {
   onGridReady(params): void {
     this.gridApi = params.api;
     this.sortDefault();
+  }
+
+  onCellValueChanged(evt: any): void {
+    console.log(evt);
+    if (evt.column.colId === 'ActualEnd') {
+      this.hubService.updateActualEnd(evt.newValue, evt.data.TowingID);
+    }
+    if (evt.column.colId === 'ActualStart') {
+      this.hubService.updateActualStart(evt.newValue, evt.data.TowingID);
+    }
   }
 
 
@@ -407,5 +431,101 @@ export class AppComponent implements OnInit {
       return 'hide';
     }
   }
-
 }
+
+function getYearCellEditor(): any {
+  function YearCellEditor(): any { }
+  YearCellEditor.prototype.getGui = function (): any {
+    return this.eGui;
+  };
+  YearCellEditor.prototype.getValue = function (): any {
+    return this.value;
+  };
+  YearCellEditor.prototype.isPopup = function (): any {
+    return true;
+  };
+  YearCellEditor.prototype.init = function (params: any): any {
+
+    this.value = params.value;
+    this.data = params.data;
+    this.field = params.colDef.field;
+    const tempElement = document.createElement('div');
+
+    let dt = moment().format('YYYY-MM-DD');
+    let tt = moment().format('HH:mm');
+
+    if (this.value !== '-' && this.value != null) {
+      dt = moment(this.value).format('YYYY-MM-DD');
+      tt = moment(this.value).format('HH:mm');
+    }
+
+    tempElement.innerHTML =
+      '<div class="yearSelect">' +
+      '<input class="gridinput" id="editorTime" style="width:130px; height:30px" type="time" value="' + tt + '">' +
+      '<input class="gridinput" id="editorDate" style="width:130px; height:30px" type="date" value="' + dt + '">' +
+      '<button id="btOK" class="yearButton" stle="height:35px">OK</button>' +
+      '<button id="btClear" class="yearButton" stle="height:35px">Clear</button>' +
+      '<button id="btEsc" class="yearButton" stle="height:35px">Esc</button>' +
+      '</div>';
+    const that = this;
+
+
+    tempElement
+      .querySelector('#btOK')
+      .addEventListener('click', function (): any {
+        that.value = moment($('#editorDate').val() + 'T' + $('#editorTime').val()).format('YYYY-MM-DDTHH:mm:ss');
+
+        if (that.field === 'ActualEnd') {
+          if (that.data.ActualStart === '-') {
+            alert('Please set Actual Start first');
+            that.value = null;
+          } else {
+            try {
+              if (moment(that.value).isBefore(that.data.ActualStart)) {
+                alert('Actual End cannot be before Actual Start');
+                that.value = null;
+              }
+            } catch (ex) {
+              alert('Please set Actual Start first');
+              that.value = null;
+            }
+          }
+        }
+
+        if (that.field === 'ActualStart' && that.data.ActualEnd !== '-') {
+          if (that.data.ActualStart === '-') {
+            alert('Please set Actual Start first');
+            that.value = null;
+          } else {
+            try {
+              if (moment(that.value).isAfter(that.data.ActualEnd)) {
+                alert('Actual Start cannot be after Actual End');
+                that.value = null;
+              }
+            } catch (ex) {
+              alert('Actual Start cannot be after Actual End');
+              that.value = null;
+            }
+          }
+        }
+
+        params.stopEditing();
+      });
+    tempElement
+      .querySelector('#btClear')
+      .addEventListener('click', function (): any {
+        that.value = null;
+        params.stopEditing();
+      });
+    tempElement
+      .querySelector('#btEsc')
+      .addEventListener('click', function (): any {
+        params.stopEditing();
+      });
+
+    this.eGui = tempElement.firstChild;
+  };
+  return YearCellEditor;
+}
+
+
