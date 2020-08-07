@@ -18,7 +18,7 @@ export class AppComponent implements OnInit {
   public displayMode = 'Rolling';
   public rowData: any;
   public getRowNodeId: any;
-  public offsetFrom = -120;
+  public offsetFrom = -300;
   public offsetTo = 240;
 
   public rangeFrom: number;
@@ -67,6 +67,10 @@ export class AppComponent implements OnInit {
         }
         return { 'background-color': 'gray' };
       }
+    },
+    {
+      headerName: 'Ready', field: 'Ready', width: 80, enableCellChangeFlash: true, flex: 1, editable: true,
+      cellEditor: 'readyCellEditor'
     },
     { headerName: 'From', field: 'From', width: 80, enableCellChangeFlash: true, flex: 1 },
     { headerName: 'To', field: 'To', width: 80, enableCellChangeFlash: true, flex: 1 },
@@ -123,7 +127,7 @@ export class AppComponent implements OnInit {
       this.hubService.getTows(this.offsetFrom, this.offsetTo);
     });
 
-    this.components = { yearCellEditor: getYearCellEditor() };
+    this.components = { yearCellEditor: getYearCellEditor(), readyCellEditor: getTowReadyEditor() };
   }
 
   statusComparator(status1: string, status2: string): any {
@@ -256,6 +260,9 @@ export class AppComponent implements OnInit {
     }
     if (evt.column.colId === 'ActualStart') {
       this.hubService.updateActualStart(evt.newValue, evt.data.TowingID);
+    }
+    if (evt.column.colId === 'Ready') {
+      this.hubService.updateReadyState(evt.newValue, evt.data.TowingID);
     }
   }
 
@@ -463,9 +470,9 @@ function getYearCellEditor(): any {
       '<div class="yearSelect">' +
       '<input class="gridinput" id="editorTime" style="width:130px; height:30px" type="time" value="' + tt + '">' +
       '<input class="gridinput" id="editorDate" style="width:130px; height:30px" type="date" value="' + dt + '">' +
-      '<button id="btOK" class="yearButton" stle="height:35px">OK</button>' +
-      '<button id="btClear" class="yearButton" stle="height:35px">Clear</button>' +
-      '<button id="btEsc" class="yearButton" stle="height:35px">Esc</button>' +
+      '<button id="btOK" class="yearButton" style="height:35px">OK</button>' +
+      '<button id="btClear" class="yearButton" style="height:35px">Clear</button>' +
+      '<button id="btEsc" class="yearButton" style="height:35px">Esc</button>' +
       '</div>';
     const that = this;
 
@@ -526,6 +533,91 @@ function getYearCellEditor(): any {
     this.eGui = tempElement.firstChild;
   };
   return YearCellEditor;
+}
+
+function getTowReadyEditor(): any {
+  function TowReadyCellEditor(): any { }
+  TowReadyCellEditor.prototype.getGui = function (): any {
+    return this.eGui;
+  };
+  TowReadyCellEditor.prototype.getValue = function (): any {
+    return this.value;
+  };
+  TowReadyCellEditor.prototype.isPopup = function (): any {
+    return true;
+  };
+  TowReadyCellEditor.prototype.init = function (params: any): any {
+
+    this.value = params.value;
+    this.data = params.data;
+    this.field = params.colDef.field;
+    const tempElement = document.createElement('div');
+
+    if (this.value === 'R' || this.value === '') {
+      tempElement.innerHTML =
+        '<div class="yearSelect">' +
+        '<select class="gridinput" name="ready" id="ready" style="height:35px">' +
+        '<option value="R" selected = "selected">R</option>' +
+        '<option value="Finished">Finished</option>' +
+        '<option value="Wait for confirmation" >Wait for confirmation</option>' +
+        '</select>' +
+        '<button id="btOK" class="yearButton" style="height:35px">OK</button>' +
+        '<button id="btClear" class="yearButton" style="height:35px">Clear</button>' +
+        '<button id="btEsc" class="yearButton" style="height:35px">Esc</button>' +
+        '</div>';
+    }
+    if (this.value === 'Finished') {
+      tempElement.innerHTML =
+        '<div class="yearSelect">' +
+        '<select class="gridinput" name="ready" id="ready" style="height:35px">' +
+        '<option value="R">R</option>' +
+        '<option value="Finished" selected = "selected">Finished</option>' +
+        '<option value="Wait for confirmation" >Wait for confirmation</option>' +
+        '</select>' +
+        '<button id="btOK" class="yearButton" style="height:35px">OK</button>' +
+        '<button id="btClear" class="yearButton" style="height:35px">Clear</button>' +
+        '<button id="btEsc" class="yearButton" style="height:35px">Esc</button>' +
+        '</div>';
+    }
+
+    if (this.value === 'Wait for confirmation') {
+      tempElement.innerHTML =
+        '<div class="yearSelect">' +
+        '<select class="gridinput" name="ready" id="ready" style="height:35px">' +
+        '<option value="R">R</option>' +
+        '<option value="Finished" >Finished</option>' +
+        '<option value="Wait for confirmation" selected = "selected">Wait for confirmation</option>' +
+        '</select>' +
+        '<button id="btOK" class="yearButton" style="height:35px">OK</button>' +
+        '<button id="btClear" class="yearButton" style="height:35px">Clear</button>' +
+        '<button id="btEsc" class="yearButton" style="height:35px">Esc</button>' +
+        '</div>';
+    }
+    const that = this;
+
+
+    tempElement
+      .querySelector('#btOK')
+      .addEventListener('click', function (): any {
+        that.value = $('#ready').val();
+        params.stopEditing();
+      });
+    tempElement
+      .querySelector('#btClear')
+      .addEventListener('click', function (): any {
+        that.value = null;
+        params.stopEditing();
+      });
+    tempElement
+      .querySelector('#btEsc')
+      .addEventListener('click', function (): any {
+        params.stopEditing();
+      });
+
+    $('#ready').val(this.value);
+    this.eGui = tempElement.firstChild;
+  };
+  return TowReadyCellEditor;
 }
 
 

@@ -115,6 +115,15 @@ export class SignalRService {
   });
   }
 
+  public updateReadyState(state: any, id: any): any {
+    const that = this;
+    this.proxy.invoke('UpdateReadyState', state, id).done(function(tows): any {
+
+    }).fail(function (error) {
+      console.log('Invocation of UpdateReadyState failed. Error: ' + error);
+  });
+  }
+
   public getTowsOneOff(from: any, to: any): any {
     const that = this;
     this.proxy.invoke('getTowsOneOff', from, to).done(function(tows): any {
