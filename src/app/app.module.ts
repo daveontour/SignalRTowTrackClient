@@ -7,9 +7,10 @@ import { AppComponent } from './app.component';
 import { AgGridModule } from 'ag-grid-angular';
 import { HttpClientModule } from '@angular/common/http';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {NgxMaterialTimepickerModule} from 'ngx-material-timepicker';
 import { FormsModule } from '@angular/forms';
 import { CustomTooltip } from './custom-tooltip.component';
+
+
 @NgModule({
   declarations: [
     AppComponent, CustomTooltip
@@ -19,13 +20,13 @@ import { CustomTooltip } from './custom-tooltip.component';
    BrowserAnimationsModule,
    AgGridModule.withComponents([]),
    HttpClientModule,
-   NgxMaterialTimepickerModule,
-   FormsModule
+   FormsModule,
   ],
   providers: [
     GlobalService,
     SignalRService
   ],
+
   bootstrap: [AppComponent]
 })
 export class AppModule { }

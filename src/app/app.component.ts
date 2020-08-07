@@ -1,12 +1,12 @@
 import { SignalRService } from './services/signalr.service';
 import { GlobalService } from './services/global.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 
 import * as moment from 'moment';
 import { HttpClient } from '@angular/common/http';
 import { CustomTooltip } from './custom-tooltip.component';
 import { ChangeDetectorRef } from '@angular/core';
-import { ValueCache } from 'ag-grid-community';
+
 
 @Component({
   selector: 'app-root',
@@ -37,12 +37,13 @@ export class AppComponent implements OnInit {
 
   public lastUpdate: string;
   public gridApi: any;
+  public gridColumnApi: any;
   public numRows: any;
   public status = 'Connecting';
   public components;
-
+  public enableReady = false;
   public columnDefs = [
-    { headerName: 'Tow ID', field: 'TowingID', width: 120, sortable: true, hide: false },
+    { headerName: 'Tow ID', field: 'TowingID' },
     {
       headerName: 'Status', field: 'Status', sortable: true, flex: 3, comparator: this.statusComparator, valueGetter: this.statusGetter,
       cellStyle(params): any {
@@ -68,35 +69,20 @@ export class AppComponent implements OnInit {
         return { 'background-color': 'gray' };
       }
     },
-    {
-      headerName: 'Ready', field: 'Ready', width: 80, enableCellChangeFlash: true, flex: 1, editable: true,
-      cellEditor: 'readyCellEditor'
-    },
-    { headerName: 'From', field: 'From', width: 80, enableCellChangeFlash: true, flex: 1 },
-    { headerName: 'To', field: 'To', width: 80, enableCellChangeFlash: true, flex: 1 },
-    {
-      headerName: 'Start', field: 'ScheduledStart', width: 120, sortable: true, enableCellChangeFlash: true,
-      valueFormatter: this.timeFormatter, comparator: this.timeComparator
-    },
-    {
-      headerName: 'End', field: 'ScheduledEnd', width: 100, sortable: true, enableCellChangeFlash: true,
-      valueFormatter: this.timeFormatter, comparator: this.timeComparator
-    },
-    {
-      headerName: 'Act. Start', field: 'ActualStart', width: 100, enableCellChangeFlash: true, editable: true, cellEditor: 'yearCellEditor',
-      valueFormatter: this.timeFormatter
-      // , cellStyle(params): any {
-      //   if (params.data.Status === 'COMPLETED_DQM_ISSUES' && params.data.ActualStart === '-') {
-      //     return { 'background-color': 'lightgray', color: 'black' };
-      //   }
-      // }
-    },
-    {
-      headerName: 'Act. End', field: 'ActualEnd', width: 100, enableCellChangeFlash: true, valueFormatter: this.timeFormatter,
-      editable: true, cellEditor: 'yearCellEditor',
-    },
-    { headerName: 'A/C Type', field: 'AircraftType', width: 100, enableCellChangeFlash: true, },
-    { headerName: 'A/C Rego', field: 'AircraftRegistration', width: 100, enableCellChangeFlash: true, },
+    { headerName: 'Ready', field: 'Ready', colId: 'ReadyEdit', flex: 1, editable: true, cellEditor: 'readyCellEditor', hide: true },
+    { headerName: 'Ready', field: 'Ready', colId: 'Ready', flex: 1 },
+    { headerName: 'From', field: 'From', flex: 1 },
+    { headerName: 'To', field: 'To', flex: 1 },
+    // tslint:disable-next-line:max-line-length
+    { headerName: 'Start', field: 'ScheduledStart', width: 120, sortable: true, valueFormatter: this.timeFormatter, comparator: this.timeComparator },
+    { headerName: 'End', field: 'ScheduledEnd', sortable: true, valueFormatter: this.timeFormatter, comparator: this.timeComparator },
+    // tslint:disable-next-line:max-line-length
+    { headerName: 'Act. Start', field: 'ActualStart', colId: 'ActualStartEdit', editable: true, cellEditor: 'yearCellEditor', valueFormatter: this.timeFormatter, hide: true },
+    { headerName: 'Act. End', field: 'ActualEnd', colId: 'ActualEndEdit', valueFormatter: this.timeFormatter, editable: true, cellEditor: 'yearCellEditor', hide: true },
+    { headerName: 'Act. Start', field: 'ActualStart', colId: 'ActualStart', valueFormatter: this.timeFormatter },
+    { headerName: 'Act. End', field: 'ActualEnd', colId: 'ActualEnd', valueFormatter: this.timeFormatter },
+    { headerName: 'A/C Type', field: 'AircraftType' },
+    { headerName: 'A/C Rego', field: 'AircraftRegistration' },
     { headerName: 'Flights', field: 'Flights', tooltipField: 'Flights', flex: 3 }
   ];
   defaultColDef = {
@@ -116,6 +102,7 @@ export class AppComponent implements OnInit {
     public globals: GlobalService,
     public hubService: SignalRService,
     private ref: ChangeDetectorRef
+
   ) {
 
     this.getRowNodeId = (data: any) => {
@@ -124,6 +111,7 @@ export class AppComponent implements OnInit {
     this.frameworkComponents = { customTooltip: CustomTooltip };
     this.hubService.connectionEstablished.subscribe((connected: boolean) => {
       this.status = 'Connected';
+      this.hubService.checkEnableReady();
       this.hubService.getTows(this.offsetFrom, this.offsetTo);
     });
 
@@ -222,6 +210,13 @@ export class AppComponent implements OnInit {
     this.gridApi.setSortModel(sort);
   }
 
+  login(): any {
+    this.hubService.login('Dave', 'WAS');
+  }
+  logout(): any {
+    this.hubService.logout();
+  }
+
   ngOnInit(): void {
     this.subscribeToEvents();
   }
@@ -246,22 +241,45 @@ export class AppComponent implements OnInit {
     this.hubService.connectionEstablishing.subscribe((message: string) => {
       that.status = 'Connecting';
     });
+
+    this.hubService.allowActualEndUpdate.subscribe((allow: boolean) => {
+      that.gridColumnApi.setColumnsVisible(['ActualEnd'], !allow);
+      that.gridColumnApi.setColumnsVisible(['ActualEndEdit'], allow);
+    });
+
+    this.hubService.allowActualStartUpdate.subscribe((allow: boolean) => {
+      that.gridColumnApi.setColumnsVisible(['ActualStart'], !allow);
+      that.gridColumnApi.setColumnsVisible(['ActualStartEdit'], allow);
+    });
+
+    this.hubService.allowReadyUpdate.subscribe((allow: boolean) => {
+      if (that.enableReady){
+      that.gridColumnApi.setColumnsVisible(['Ready'], !allow);
+      that.gridColumnApi.setColumnsVisible(['ReadyEdit'], allow);
+      }
+    });
+    this.hubService.enableReadyCB.subscribe((enable: boolean) => {
+      that.enableReady = enable;
+      that.gridColumnApi.setColumnsVisible(['Ready'], enable);
+      that.gridColumnApi.setColumnsVisible(['ReadyEdit'], false);
+    });
   }
 
   onGridReady(params): void {
     this.gridApi = params.api;
+    this.gridColumnApi = params.columnApi;
     this.sortDefault();
   }
 
   onCellValueChanged(evt: any): void {
     console.log(evt);
-    if (evt.column.colId === 'ActualEnd') {
+    if (evt.column.colId === 'ActualEndEdit') {
       this.hubService.updateActualEnd(evt.newValue, evt.data.TowingID);
     }
-    if (evt.column.colId === 'ActualStart') {
+    if (evt.column.colId === 'ActualStartEdit') {
       this.hubService.updateActualStart(evt.newValue, evt.data.TowingID);
     }
-    if (evt.column.colId === 'Ready') {
+    if (evt.column.colId === 'ReadyEdit') {
       this.hubService.updateReadyState(evt.newValue, evt.data.TowingID);
     }
   }
@@ -406,6 +424,7 @@ export class AppComponent implements OnInit {
     this.globals.rangeMode = 'range';
     this.displayMode = 'Fixed';
 
+    debugger;
     const mss = this.rangeDate + ' ' + this.rangeFrom;
     const ms = moment(mss, 'YYYY-MM-DD HH:mm');
 
@@ -553,7 +572,7 @@ function getTowReadyEditor(): any {
     this.field = params.colDef.field;
     const tempElement = document.createElement('div');
 
-    if (this.value === 'R' || this.value === '') {
+    if (this.value === 'R' || this.value === '' || this.value === null) {
       tempElement.innerHTML =
         '<div class="yearSelect">' +
         '<select class="gridinput" name="ready" id="ready" style="height:35px">' +

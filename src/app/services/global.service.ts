@@ -15,5 +15,8 @@ export class GlobalService {
   public serverURL = 'http://localhost:8080/towwebsocket';
   public serverWebRoot = 'http://localhost:8080';
   public displayMode = 'ARR';
+  public id = null;
+  public token = null;
+  public userStatus = 'Logged Out';
   constructor() { }
 }
