@@ -1,12 +1,10 @@
-
-import { Component} from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { ITooltipAngularComp } from 'ag-grid-angular/public-api';
 
 
 @Component({
   // tslint:disable-next-line:component-selector
-  selector: 'tooltip-component',
-  templateUrl: './custom-tooltip.component.html',
+  templateUrl: './custom-plan-tooltip.component.html',
   styles: [
     `
       :host {
@@ -28,15 +26,24 @@ import { ITooltipAngularComp } from 'ag-grid-angular/public-api';
   ],
 })
 // tslint:disable-next-line:component-class-suffix
-export class CustomTooltip implements ITooltipAngularComp {
+export class CustomPlanTooltip implements ITooltipAngularComp {
   public params: any;
   public data: any;
 
   agInit(params): void {
-    this.params = params;
 
-    this.data = params.api.getDisplayedRowAtIndex(params.rowIndex).data;
-    this.data.color = this.params.color || 'white';
+    debugger;
+    this.params = params;
+    const row = this.params.api.getDisplayedRowAtIndex(params.rowIndex);
+
+
+    let html = '<div>';
+    row.data.TowPlanList.forEach(element => {
+      html = html + '<b>' + element.TowingID + '<b><br/>';
+    });
+
+    html = html + '</div>';
+    this.data = row.data.TowPlanList;
+
   }
 }
-

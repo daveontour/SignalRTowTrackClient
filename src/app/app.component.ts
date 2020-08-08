@@ -5,7 +5,11 @@ import { Component, OnInit, Inject } from '@angular/core';
 import * as moment from 'moment';
 import { HttpClient } from '@angular/common/http';
 import { CustomTooltip } from './custom-tooltip.component';
+import { CustomPlanTooltip } from './custom-plan-tooltip.component';
 import { ChangeDetectorRef } from '@angular/core';
+
+import { MatDialogRef, MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { LoginDialog } from './login-dialog.component';
 
 
 @Component({
@@ -14,7 +18,6 @@ import { ChangeDetectorRef } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-
   public displayMode = 'Rolling';
   public rowData: any;
   public getRowNodeId: any;
@@ -43,7 +46,7 @@ export class AppComponent implements OnInit {
   public components;
   public enableReady = false;
   public columnDefs = [
-    { headerName: 'Tow ID', field: 'TowingID' },
+    { headerName: 'Tow ID', field: 'TowingID', tooltipComponent: 'customPlanTooltip', tooltipField: 'TowingID' },
     {
       headerName: 'Status', field: 'Status', sortable: true, flex: 3, comparator: this.statusComparator, valueGetter: this.statusGetter,
       cellStyle(params): any {
@@ -71,8 +74,8 @@ export class AppComponent implements OnInit {
     },
     { headerName: 'Ready', field: 'Ready', colId: 'ReadyEdit', flex: 1, editable: true, cellEditor: 'readyCellEditor', hide: true },
     { headerName: 'Ready', field: 'Ready', colId: 'Ready', flex: 1 },
-    { headerName: 'From', field: 'From', flex: 1 },
-    { headerName: 'To', field: 'To', flex: 1 },
+    { headerName: 'From', field: 'From', tooltipField: 'Flights', flex: 1 },
+    { headerName: 'To', field: 'To', tooltipField: 'Flights', flex: 1 },
     // tslint:disable-next-line:max-line-length
     { headerName: 'Start', field: 'ScheduledStart', width: 120, sortable: true, valueFormatter: this.timeFormatter, comparator: this.timeComparator },
     { headerName: 'End', field: 'ScheduledEnd', sortable: true, valueFormatter: this.timeFormatter, comparator: this.timeComparator },
@@ -101,14 +104,16 @@ export class AppComponent implements OnInit {
     private http: HttpClient,
     public globals: GlobalService,
     public hubService: SignalRService,
-    private ref: ChangeDetectorRef
+    private ref: ChangeDetectorRef,
+    private dialog: MatDialog,
+    // private snackBar: MatSnackBar
 
   ) {
 
     this.getRowNodeId = (data: any) => {
       return data.TowingID;
     };
-    this.frameworkComponents = { customTooltip: CustomTooltip };
+    this.frameworkComponents = { customTooltip: CustomTooltip, customPlanTooltip: CustomPlanTooltip };
     this.hubService.connectionEstablished.subscribe((connected: boolean) => {
       this.status = 'Connected';
       this.hubService.checkEnableReady();
@@ -253,9 +258,9 @@ export class AppComponent implements OnInit {
     });
 
     this.hubService.allowReadyUpdate.subscribe((allow: boolean) => {
-      if (that.enableReady){
-      that.gridColumnApi.setColumnsVisible(['Ready'], !allow);
-      that.gridColumnApi.setColumnsVisible(['ReadyEdit'], allow);
+      if (that.enableReady) {
+        that.gridColumnApi.setColumnsVisible(['Ready'], !allow);
+        that.gridColumnApi.setColumnsVisible(['ReadyEdit'], allow);
       }
     });
     this.hubService.enableReadyCB.subscribe((enable: boolean) => {
@@ -389,6 +394,10 @@ export class AppComponent implements OnInit {
       row.ActualEnd = '-';
     }
 
+    if (!row.TowPlan || row.TowPlan === null){
+      row.TowPlan = row.From + '->' + row.To;
+    }
+
     return row;
   }
   checkAddRow(updatedTow: any): boolean {
@@ -457,6 +466,30 @@ export class AppComponent implements OnInit {
       return 'hide';
     }
   }
+
+  openDialog(): any {
+
+    const that = this;
+    const dialogRef = this.dialog.open(LoginDialog, {
+      data: {
+        message: 'Login for edit access',
+        buttonText: {
+          ok: 'Login',
+          cancel: 'Cancel'
+        }
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((data: any) => {
+      if (data.confirmed) {
+        that.hubService.login(data.id, data.token);
+        const a = document.createElement('a');
+        a.click();
+        a.remove();
+      }
+    });
+  }
+
 }
 
 function getYearCellEditor(): any {
@@ -638,5 +671,7 @@ function getTowReadyEditor(): any {
   };
   return TowReadyCellEditor;
 }
+
+
 
 

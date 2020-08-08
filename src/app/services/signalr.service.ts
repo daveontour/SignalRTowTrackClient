@@ -3,6 +3,8 @@ import 'jquery';
 import { HubConnection } from 'signalr';
 import { NgZone } from '@angular/core';
 import { GlobalService } from './global.service';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmationDialog } from '../confirmation-dialog.component';
 
 declare var jQuery: any;
 declare var $: any;
@@ -29,7 +31,7 @@ export class SignalRService {
   private proxy;
   chat: any;
 
-  constructor(private zone: NgZone, public globals: GlobalService) {
+  constructor(private zone: NgZone, public globals: GlobalService, public dialog: MatDialog) {
     this.createConnection();
     this.registerOnServerEvents();
     this.startConnection();
@@ -138,6 +140,24 @@ export class SignalRService {
       that.allowActualEndUpdate.emit(data.AllowActualEnd);
       that.allowActualStartUpdate.emit(data.AllowActualStart);
       that.allowReadyUpdate.emit(data.AllowReady);
+      if (!(data.AllowActualEnd || data.AllowActualStart || data.AllowRead)) {
+        const dialogRef = that.dialog.open(ConfirmationDialog, {
+          data: {
+            message: 'Login incorrect or no configured edit capability',
+            buttonText: {
+              ok: 'OK',
+              cancel: 'Cancel'
+            }
+          }
+        });
+        dialogRef.afterClosed().subscribe((confirmed: any) => {
+          const a = document.createElement('a');
+          a.click();
+          a.remove();
+
+        });
+        that.globals.userStatus = 'No Edit Access';
+      }
       that.zone.run(() => { });
     }).fail(function (error) {
       console.log('Invocation of Login failed. Error: ' + error);
