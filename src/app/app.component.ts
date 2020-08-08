@@ -86,7 +86,7 @@ export class AppComponent implements OnInit {
     { headerName: 'Act. End', field: 'ActualEnd', colId: 'ActualEnd', valueFormatter: this.timeFormatter },
     { headerName: 'A/C Type', field: 'AircraftType' },
     { headerName: 'A/C Rego', field: 'AircraftRegistration' },
-    { headerName: 'Flights', field: 'Flights', tooltipField: 'Flights', flex: 3 }
+    { headerName: 'Flights', field: 'Flights', tooltipField: 'TowingID', flex: 3, tooltipComponent: 'customPlanTooltip', }
   ];
   defaultColDef = {
     editable: false,

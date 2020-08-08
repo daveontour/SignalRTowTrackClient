@@ -29,27 +29,27 @@ import { ITooltipAngularComp } from 'ag-grid-angular/public-api';
 export class CustomPlanTooltip implements ITooltipAngularComp {
   public params: any;
   public data: any;
+  public row: any;
 
   agInit(params): void {
 
-    debugger;
     this.params = params;
-    const row = this.params.api.getDisplayedRowAtIndex(params.rowIndex);
+    this.row = this.params.api.getDisplayedRowAtIndex(params.rowIndex);
 
 
     let html = '<div>';
-    row.data.TowPlanList.forEach(element => {
+    this.row.data.TowPlanList.forEach(element => {
       html = html + '<b>' + element.TowingID + '<b><br/>';
     });
 
     html = html + '</div>';
-    this.data = row.data.TowPlanList;
+    this.data = this.row.data.TowPlanList;
 
-    for ( let i  = row.data.TowPlanList.length; i < 10; i++){
-      row.data.TowPlanList.push({TowingID: '', From: '', To: ''});
+    for ( let i  = this.row.data.TowPlanList.length; i < 10; i++){
+      this.row.data.TowPlanList.push({TowingID: '', From: '', To: '', ScheduledTime: ''});
     }
 
-    this.data = row.data.TowPlanList;
+    this.data = this.row.data.TowPlanList;
 
   }
 }
