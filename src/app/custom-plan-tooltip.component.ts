@@ -10,7 +10,7 @@ import { ITooltipAngularComp } from 'ag-grid-angular/public-api';
       :host {
         position: absolute;
         width: 280px;
-        height: 100px;
+        height: 300px;
         border: 3px solid darkblue;
         overflow: hidden;
         pointer-events: none;
@@ -43,6 +43,12 @@ export class CustomPlanTooltip implements ITooltipAngularComp {
     });
 
     html = html + '</div>';
+    this.data = row.data.TowPlanList;
+
+    for ( let i  = row.data.TowPlanList.length; i < 10; i++){
+      row.data.TowPlanList.push({TowingID: '', From: '', To: ''});
+    }
+
     this.data = row.data.TowPlanList;
 
   }
