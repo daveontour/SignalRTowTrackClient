@@ -85,5 +85,5 @@
   <span style="margin-left: 10px; font-size: 11px">Display Mode:</span>
   <span style="margin-left: 10px; font-size: 11px;" [ngClass]="displayMode">{{displayMode}}</span>
   <span style="margin-left: 10px; font-size: 11px">User Status:</span>
-  <span style="margin-left: 10px; font-size: 11px;color:cadetblue">{{globals.userStatus}}</span>
+  <span style="margin-left: 10px; font-size: 11px;" [ngClass]="{'LoggedIn': globals.userStatus =='Logged In','LoggedOut': globals.userStatus =='Logged Out','NoEdit': globals.userStatus =='No Edit Access'}">{{globals.userStatus}}</span>
 </div>

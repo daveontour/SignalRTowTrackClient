@@ -16,10 +16,20 @@
 .Connecting {
   color: yellow;
 }
-
+.NoEdit {
+  color: yellow;
+}
   .Disconnected {
     color: red;
   }
+
+  .LoggedIn {
+    color: red;
+  }
+  .LoggedOut {
+    color: lime;
+  }
+
   .Live {
       color: skyblue;
   }

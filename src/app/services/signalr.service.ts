@@ -140,7 +140,8 @@ export class SignalRService {
       that.allowActualEndUpdate.emit(data.AllowActualEnd);
       that.allowActualStartUpdate.emit(data.AllowActualStart);
       that.allowReadyUpdate.emit(data.AllowReady);
-      if (!(data.AllowActualEnd || data.AllowActualStart || data.AllowRead)) {
+
+      if (!(data.AllowActualEnd || data.AllowActualStart || data.AllowReady)) {
         const dialogRef = that.dialog.open(ConfirmationDialog, {
           data: {
             message: 'Login incorrect or no configured edit capability',

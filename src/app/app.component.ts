@@ -81,8 +81,8 @@ export class AppComponent implements OnInit {
     { headerName: 'End', field: 'ScheduledEnd', sortable: true, valueFormatter: this.timeFormatter, comparator: this.timeComparator },
     // tslint:disable-next-line:max-line-length
     { headerName: 'Act. Start', field: 'ActualStart', colId: 'ActualStartEdit', editable: true, cellEditor: 'yearCellEditor', valueFormatter: this.timeFormatter, hide: true },
-    { headerName: 'Act. End', field: 'ActualEnd', colId: 'ActualEndEdit', valueFormatter: this.timeFormatter, editable: true, cellEditor: 'yearCellEditor', hide: true },
     { headerName: 'Act. Start', field: 'ActualStart', colId: 'ActualStart', valueFormatter: this.timeFormatter },
+    { headerName: 'Act. End', field: 'ActualEnd', colId: 'ActualEndEdit', valueFormatter: this.timeFormatter, editable: true, cellEditor: 'yearCellEditor', hide: true },
     { headerName: 'Act. End', field: 'ActualEnd', colId: 'ActualEnd', valueFormatter: this.timeFormatter },
     { headerName: 'A/C Type', field: 'AircraftType' },
     { headerName: 'A/C Rego', field: 'AircraftRegistration' },
