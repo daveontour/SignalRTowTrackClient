@@ -32,7 +32,7 @@ export class AppComponent implements OnInit {
   public editorTime: any;
 
   public showOnBlocks = true;
-  public showDateRange = true;
+  public showDateRange = false;
   public enableDisplaySwitcher = false;
   public showCompleted = false;
   public tooltipShowDelay = 0;
@@ -263,10 +263,20 @@ export class AppComponent implements OnInit {
         that.gridColumnApi.setColumnsVisible(['ReadyEdit'], allow);
       }
     });
-    this.hubService.enableReadyCB.subscribe((enable: boolean) => {
-      that.enableReady = enable;
-      that.gridColumnApi.setColumnsVisible(['Ready'], enable);
+    this.hubService.enableReadyCB.subscribe((enable: boolean[]) => {
+      that.enableReady = enable[0];
+      that.gridColumnApi.setColumnsVisible(['Ready'], enable[0]);
       that.gridColumnApi.setColumnsVisible(['ReadyEdit'], false);
+
+      // Show the  logon buttons
+      if (enable[1]) {
+        $('#loginBtn').show(0);
+        $('#logoutBtn').show(0);
+      }
+      // Show the range selector
+      if (enable[2]) {
+        that.showDateRange = true;
+      }
     });
   }
 
@@ -394,7 +404,7 @@ export class AppComponent implements OnInit {
       row.ActualEnd = '-';
     }
 
-    if (!row.TowPlan || row.TowPlan === null){
+    if (!row.TowPlan || row.TowPlan === null) {
       row.TowPlan = row.From + '->' + row.To;
     }
 
@@ -433,7 +443,6 @@ export class AppComponent implements OnInit {
     this.globals.rangeMode = 'range';
     this.displayMode = 'Fixed';
 
-    debugger;
     const mss = this.rangeDate + ' ' + this.rangeFrom;
     const ms = moment(mss, 'YYYY-MM-DD HH:mm');
 

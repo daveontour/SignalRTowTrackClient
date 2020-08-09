@@ -46,13 +46,6 @@
     </span>
     <label>Date:</label>
     <input class="gridinput" [(ngModel)]="rangeDate" style="width:100px" type="date">
-  <!--  <label>From:</label>
-    <input [ngxTimepicker]="picker" [format]="24" class="gridinput" [(ngModel)]='rangeFrom'>
-    <ngx-material-timepicker #picker [theme]="darkTheme"></ngx-material-timepicker>
-    <label>To:</label>
-    <input [ngxTimepicker]="picker2" [format]="24" class="gridinput" [(ngModel)]='rangeTo'>
-    <ngx-material-timepicker #picker2 [theme]="darkTheme"></ngx-material-timepicker>
-  -->
   <label>From:</label>
   <input  class="gridinput" [(ngModel)]='rangeFrom' type='time' style='width:60px'>
   <label>To:</label>
@@ -61,13 +54,13 @@
 
   </div>
 
-  <div style="margin-left:20px;height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px">
+  <div style="margin-left:20px;height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px;">
     <label>Show Completed:</label>
     <input type="checkbox" [(ngModel)]='showCompleted' (change)='loadData()'>
 
     <button (click)="sortDefault()" style='font-size: 12px; width:100px'>Default Sort</button>
-    <button (click)="openDialog()" style='font-size: 12px; width:50px'>Login</button>
-    <button (click)="logout()" style='font-size: 12px; width:50px'>Logout</button>
+    <button id = "loginBtn" (click)="openDialog()" style='font-size: 12px; width:50px; display: none'>Login</button>
+    <button id="logoutBtn" (click)="logout()" style='font-size: 12px; width:50px; display: none'>Logout</button>
   </div>
 </div>
 
