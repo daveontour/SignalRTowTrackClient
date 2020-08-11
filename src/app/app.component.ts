@@ -6,10 +6,12 @@ import * as moment from 'moment';
 import { HttpClient } from '@angular/common/http';
 import { CustomTooltip } from './custom-tooltip.component';
 import { CustomPlanTooltip } from './custom-plan-tooltip.component';
+import { CustomStandTooltip } from './custom-stand-tooltip.component';
 import { ChangeDetectorRef } from '@angular/core';
 
 import { MatDialogRef, MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { LoginDialog } from './login-dialog.component';
+import { ConfirmationDialog } from './confirmation-dialog.component';
 
 
 @Component({
@@ -45,6 +47,8 @@ export class AppComponent implements OnInit {
   public status = 'Connecting';
   public components;
   public enableReady = false;
+  public overlayLoadingTemplate =
+  '<span class="ag-overlay-loading-center">Please log in to load the tows</span>';
   public columnDefs = [
     { headerName: 'Tow ID', field: 'TowingID', tooltipComponent: 'customPlanTooltip', tooltipField: 'TowingID' },
     {
@@ -74,8 +78,8 @@ export class AppComponent implements OnInit {
     },
     { headerName: 'Ready', field: 'Ready', colId: 'ReadyEdit', flex: 1, editable: true, cellEditor: 'readyCellEditor', hide: true },
     { headerName: 'Ready', field: 'Ready', colId: 'Ready', flex: 1 },
-    { headerName: 'From', field: 'From', tooltipField: 'Flights', flex: 1 },
-    { headerName: 'To', field: 'To', tooltipField: 'Flights', flex: 1 },
+    { headerName: 'From', field: 'From', tooltipComponent: 'customStandTooltip', tooltipField: 'From', flex: 1 },
+    { headerName: 'To', field: 'To', tooltipComponent: 'customStandTooltip', tooltipField: 'To', flex: 1 },
     // tslint:disable-next-line:max-line-length
     { headerName: 'Start', field: 'ScheduledStart', width: 120, sortable: true, valueFormatter: this.timeFormatter, comparator: this.timeComparator },
     { headerName: 'End', field: 'ScheduledEnd', sortable: true, valueFormatter: this.timeFormatter, comparator: this.timeComparator },
@@ -113,11 +117,11 @@ export class AppComponent implements OnInit {
     this.getRowNodeId = (data: any) => {
       return data.TowingID;
     };
-    this.frameworkComponents = { customTooltip: CustomTooltip, customPlanTooltip: CustomPlanTooltip };
+    // tslint:disable-next-line:max-line-length
+    this.frameworkComponents = { customTooltip: CustomTooltip, customPlanTooltip: CustomPlanTooltip, customStandTooltip: CustomStandTooltip };
     this.hubService.connectionEstablished.subscribe((connected: boolean) => {
       this.status = 'Connected';
       this.hubService.checkEnableReady();
-      this.hubService.getTows(this.offsetFrom, this.offsetTo);
     });
 
     this.components = { yearCellEditor: getYearCellEditor(), readyCellEditor: getTowReadyEditor() };
@@ -215,9 +219,6 @@ export class AppComponent implements OnInit {
     this.gridApi.setSortModel(sort);
   }
 
-  login(): any {
-    this.hubService.login('Dave', 'WAS');
-  }
   logout(): any {
     this.hubService.logout();
   }
@@ -252,6 +253,19 @@ export class AppComponent implements OnInit {
       that.gridColumnApi.setColumnsVisible(['ActualEndEdit'], allow);
     });
 
+    this.hubService.loggedIn.subscribe((allow: boolean) => {
+      if (allow){
+        that.hubService.getTows(that.offsetFrom, that.offsetTo);
+      } else {
+        that.openDialog();
+      }
+    });
+
+    this.hubService.loggedOut.subscribe((allow: boolean) => {
+        that.openDialog();
+        that.rowData = [];
+    });
+
     this.hubService.allowActualStartUpdate.subscribe((allow: boolean) => {
       that.gridColumnApi.setColumnsVisible(['ActualStart'], !allow);
       that.gridColumnApi.setColumnsVisible(['ActualStartEdit'], allow);
@@ -263,7 +277,7 @@ export class AppComponent implements OnInit {
         that.gridColumnApi.setColumnsVisible(['ReadyEdit'], allow);
       }
     });
-    this.hubService.enableReadyCB.subscribe((enable: boolean[]) => {
+    this.hubService.enableReadyCallBack.subscribe((enable: boolean[]) => {
       that.enableReady = enable[0];
       that.gridColumnApi.setColumnsVisible(['Ready'], enable[0]);
       that.gridColumnApi.setColumnsVisible(['ReadyEdit'], false);
@@ -277,6 +291,8 @@ export class AppComponent implements OnInit {
       if (enable[2]) {
         that.showDateRange = true;
       }
+
+      that.openDialog();
     });
   }
 
@@ -365,6 +381,7 @@ export class AppComponent implements OnInit {
     this.hubService.getTows(this.offsetFrom, this.offsetTo);
   }
   transformRow(row: any): any {
+
 
     if (row.ArrivalFlightDescriptor !== null) {
       row.Arrival = row.ArrivalFlightDescriptor.replace('@', ' ');
@@ -476,17 +493,58 @@ export class AppComponent implements OnInit {
     }
   }
 
+  copyToClipboard(): void {
+
+    let cb = 'TowingId,Status,ReadyState,FromStand,ToStand,ScheduledStart,ScheduledEnd,ActualStart,ActualEnd,AircraftRegistration,AircraftType,Arrival,Departure,TowPlan\n';
+
+    for (let i = 0; i < this.numRows; i++){
+      const rowData = this.gridApi.getDisplayedRowAtIndex(i).data;
+      cb += rowData.TowingID + ',';
+      cb += rowData.Status + ',';
+      cb += rowData.Ready + ',';
+      cb += rowData.From + ',';
+      cb += rowData.To + ',';
+      cb += rowData.ScheduledStart + ',';
+      cb += rowData.ScheduledEnd + ',';
+      cb += rowData.ActualStart + ',';
+      cb += rowData.ActualEnd + ',';
+      cb += rowData.AircraftRegistration + ',';
+      cb += rowData.AircraftType + ',';
+      cb += rowData.Arrival + ',';
+      cb += rowData.Departure + ',';
+      cb += rowData.TowPlan + '\n';
+    }
+    const dummy = document.createElement('textarea');
+    document.body.appendChild(dummy);
+    dummy.value = cb;
+    dummy.select();
+    document.execCommand('copy');
+    document.body.removeChild(dummy);
+
+    const dialogRef = this.dialog.open(ConfirmationDialog, {
+      data: {
+        message: 'Grid data copied to clipboard',
+        buttonText: {
+          ok: 'OK',
+          cancel: 'Cancel'
+        }
+      },
+      disableClose : true
+    });
+}
   openDialog(): any {
 
+    debugger;
     const that = this;
     const dialogRef = this.dialog.open(LoginDialog, {
       data: {
-        message: 'Login for edit access',
+        message: 'Login to access Tow Tracker using your AMS credentials',
         buttonText: {
           ok: 'Login',
           cancel: 'Cancel'
         }
-      }
+      },
+      disableClose : true
     });
 
     dialogRef.afterClosed().subscribe((data: any) => {

@@ -1,5 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { NgZone } from '@angular/core';
 ;
 @Component({
     templateUrl: 'login-dialog.html',
@@ -11,6 +12,7 @@ export class LoginDialog {
     id: string;
     token: string;
     constructor(
+        private zone: NgZone,
         @Inject(MAT_DIALOG_DATA) private data: any,
         private dialogRef: MatDialogRef<LoginDialog>) {
         if (data) {
@@ -24,6 +26,11 @@ export class LoginDialog {
 
     onConfirmClick(): void {
         this.dialogRef.close({ id: this.id, token: this.token, confirmed: true });
+        this.zone.run(() => { });
+    }
+    onCancelClick(): void {
+        this.dialogRef.close();
+        this.zone.run(() => { });
     }
 
 }

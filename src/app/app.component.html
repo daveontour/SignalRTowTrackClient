@@ -61,6 +61,7 @@
     <button (click)="sortDefault()" style='font-size: 12px; width:100px'>Default Sort</button>
     <button id = "loginBtn" (click)="openDialog()" style='font-size: 12px; width:50px; display: none'>Login</button>
     <button id="logoutBtn" (click)="logout()" style='font-size: 12px; width:50px; display: none'>Logout</button>
+    <button id="copyBtn" (click)="copyToClipboard()" style='font-size: 12px; width:50px'>Copy</button>
   </div>
 </div>
 
@@ -73,6 +74,7 @@
   [frameworkComponents]="frameworkComponents"
   [components]="components"
   (cellValueChanged)="onCellValueChanged($event)"
+  [overlayLoadingTemplate]="overlayLoadingTemplate"
   >
 </ag-grid-angular>
 <div style="height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px">
@@ -85,5 +87,5 @@
   <span style="margin-left: 10px; font-size: 11px">Display Mode:</span>
   <span style="margin-left: 10px; font-size: 11px;" [ngClass]="displayMode">{{displayMode}}</span>
   <span style="margin-left: 10px; font-size: 11px">User Status:</span>
-  <span style="margin-left: 10px; font-size: 11px;" [ngClass]="{'LoggedIn': globals.userStatus =='Logged In','LoggedOut': globals.userStatus =='Logged Out','NoEdit': globals.userStatus =='No Edit Access'}">{{globals.userStatus}}</span>
+  <span style="margin-left: 10px; font-size: 11px;" [ngClass]="{'LoggedIn': globals.userStatus =='Logged In','LoggedOut': globals.userStatus =='Logged Out' || globals.userStatus =='No Access' ,'NoEdit': globals.userStatus =='No Edit Access'}">{{globals.userStatus}}</span>
 </div>

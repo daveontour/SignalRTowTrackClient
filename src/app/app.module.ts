@@ -35,17 +35,6 @@ import {LoginDialog} from './login-dialog.component';
   bootstrap: [AppComponent],
   exports: [
     BrowserModule,
-    // CDK
-    // A11yModule,
-    // BidiModule,
-    // ObserversModule,
-    // OverlayModule,
-    // PlatformModule,
-    // PortalModule,
-    // CdkStepperModule,
-    // CdkTableModule,
-    // // Material
-
     MatDialogModule
   ],
   entryComponents: [ConfirmationDialog, LoginDialog],
