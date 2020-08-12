@@ -9,7 +9,7 @@ import { CustomPlanTooltip } from './custom-plan-tooltip.component';
 import { CustomStandTooltip } from './custom-stand-tooltip.component';
 import { ChangeDetectorRef } from '@angular/core';
 
-import { MatDialogRef, MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { LoginDialog } from './login-dialog.component';
 import { ConfirmationDialog } from './confirmation-dialog.component';
 
@@ -47,8 +47,7 @@ export class AppComponent implements OnInit {
   public status = 'Connecting';
   public components;
   public enableReady = false;
-  public overlayLoadingTemplate =
-  '<span class="ag-overlay-loading-center">Please log in to load the tows</span>';
+  public overlayLoadingTemplate =  '<span class="ag-overlay-loading-center">Please log in to load the tows</span>';
   public columnDefs = [
     { headerName: 'Tow ID', field: 'TowingID', tooltipComponent: 'customPlanTooltip', tooltipField: 'TowingID' },
     {
@@ -92,7 +91,7 @@ export class AppComponent implements OnInit {
     { headerName: 'A/C Rego', field: 'AircraftRegistration' },
     { headerName: 'Flights', field: 'Flights', tooltipField: 'TowingID', flex: 3, tooltipComponent: 'customPlanTooltip', }
   ];
-  defaultColDef = {
+  public defaultColDef = {
     editable: false,
     sortable: true,
     flex: 2,
@@ -193,7 +192,6 @@ export class AppComponent implements OnInit {
       return params.data.Status;
     }
   }
-
   timeFormatter(params): any {
     if (params.value === '-') {
       return '-';
@@ -204,7 +202,6 @@ export class AppComponent implements OnInit {
     const m = moment(params.value);
     return m.format('HH:mm');
   }
-
   sortDefault(): any {
     const sort = [
       {
@@ -218,16 +215,13 @@ export class AppComponent implements OnInit {
     ];
     this.gridApi.setSortModel(sort);
   }
-
   logout(): any {
     this.hubService.logout();
   }
-
   ngOnInit(): void {
     this.subscribeToEvents();
   }
-
-  private subscribeToEvents(): void {
+  subscribeToEvents(): void {
     const that = this;
     this.hubService.deleteReceived.subscribe((message: string) => {
       that.deleteGridRow(message);
@@ -248,9 +242,17 @@ export class AppComponent implements OnInit {
       that.status = 'Connecting';
     });
 
-    this.hubService.allowActualEndUpdate.subscribe((allow: boolean) => {
+    this.hubService.allowActual.subscribe((allow: boolean) => {
       that.gridColumnApi.setColumnsVisible(['ActualEnd'], !allow);
       that.gridColumnApi.setColumnsVisible(['ActualEndEdit'], allow);
+      that.gridColumnApi.setColumnsVisible(['ActualStart'], !allow);
+      that.gridColumnApi.setColumnsVisible(['ActualStartEdit'], allow); 
+
+      if (that.enableReady) {
+        that.gridColumnApi.setColumnsVisible(['Ready'], !allow);
+        that.gridColumnApi.setColumnsVisible(['ReadyEdit'], allow);
+      }
+
     });
 
     this.hubService.loggedIn.subscribe((allow: boolean) => {
@@ -266,17 +268,7 @@ export class AppComponent implements OnInit {
         that.rowData = [];
     });
 
-    this.hubService.allowActualStartUpdate.subscribe((allow: boolean) => {
-      that.gridColumnApi.setColumnsVisible(['ActualStart'], !allow);
-      that.gridColumnApi.setColumnsVisible(['ActualStartEdit'], allow);
-    });
 
-    this.hubService.allowReadyUpdate.subscribe((allow: boolean) => {
-      if (that.enableReady) {
-        that.gridColumnApi.setColumnsVisible(['Ready'], !allow);
-        that.gridColumnApi.setColumnsVisible(['ReadyEdit'], allow);
-      }
-    });
     this.hubService.enableReadyCallBack.subscribe((enable: boolean[]) => {
       that.enableReady = enable[0];
       that.gridColumnApi.setColumnsVisible(['Ready'], enable[0]);
@@ -295,15 +287,13 @@ export class AppComponent implements OnInit {
       that.openDialog();
     });
   }
-
   onGridReady(params): void {
     this.gridApi = params.api;
     this.gridColumnApi = params.columnApi;
     this.sortDefault();
   }
-
   onCellValueChanged(evt: any): void {
-    console.log(evt);
+
     if (evt.column.colId === 'ActualEndEdit') {
       this.hubService.updateActualEnd(evt.newValue, evt.data.TowingID);
     }
@@ -314,8 +304,6 @@ export class AppComponent implements OnInit {
       this.hubService.updateReadyState(evt.newValue, evt.data.TowingID);
     }
   }
-
-
   loadGrid(data: any): void {
     const that = this;
     const rowsToAdd = [];
@@ -356,7 +344,6 @@ export class AppComponent implements OnInit {
     this.lastUpdate = moment().format('HH:mm:ss');
 
   }
-
   addGridRow(addTow: any): void {
     addTow = this.transformRow(addTow);
     if (this.checkAddRow(addTow)) {
@@ -366,14 +353,12 @@ export class AppComponent implements OnInit {
       this.numRows = this.gridApi.getDisplayedRowCount();
     }
   }
-
   deleteGridRow(removeTow: any): void {
     const itemsToRemove = [removeTow];
     this.gridApi.updateRowData({ remove: itemsToRemove });
     this.lastUpdate = moment().format('HH:mm:ss');
     this.numRows = this.gridApi.getDisplayedRowCount();
   }
-
   refresh(): any {
     this.loadData();
   }
@@ -445,7 +430,6 @@ export class AppComponent implements OnInit {
     }
     return true;
   }
-
   setCurrentRange(): any {
     this.globals.rangeMode = 'offset';
     this.displayMode = 'Rolling';
@@ -455,7 +439,6 @@ export class AppComponent implements OnInit {
     // this.director.minuteTick();
     this.loadData();
   }
-
   setSelectedRange(): any {
     this.globals.rangeMode = 'range';
     this.displayMode = 'Fixed';
@@ -477,7 +460,6 @@ export class AppComponent implements OnInit {
     this.hubService.getTowsOneOff(this.offsetFrom, this.offsetTo);
 
   }
-
   getRangeBulletClass(): any {
     if (this.globals.rangeMode !== 'offset') {
       return 'show';
@@ -492,7 +474,6 @@ export class AppComponent implements OnInit {
       return 'hide';
     }
   }
-
   copyToClipboard(): void {
 
     let cb = 'TowingId,Status,ReadyState,FromStand,ToStand,ScheduledStart,ScheduledEnd,ActualStart,ActualEnd,AircraftRegistration,AircraftType,Arrival,Departure,TowPlan\n';
@@ -524,17 +505,12 @@ export class AppComponent implements OnInit {
     const dialogRef = this.dialog.open(ConfirmationDialog, {
       data: {
         message: 'Grid data copied to clipboard',
-        buttonText: {
-          ok: 'OK',
-          cancel: 'Cancel'
-        }
       },
       disableClose : true
     });
 }
   openDialog(): any {
 
-    debugger;
     const that = this;
     const dialogRef = this.dialog.open(LoginDialog, {
       data: {
@@ -556,7 +532,6 @@ export class AppComponent implements OnInit {
       }
     });
   }
-
 }
 
 function getYearCellEditor(): any {

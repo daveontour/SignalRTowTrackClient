@@ -9,7 +9,6 @@ import { ConfirmationDialog } from '../confirmation-dialog.component';
 declare var jQuery: any;
 declare var $: any;
 
-
 @Injectable({
   providedIn: 'root'
 })
@@ -22,17 +21,15 @@ export class SignalRService {
   deleteReceived = new EventEmitter<any>();
   updateReceived = new EventEmitter<any>();
   towsReceived = new EventEmitter<any>();
-  allowActualStartUpdate = new EventEmitter<boolean>();
-  allowActualEndUpdate = new EventEmitter<boolean>();
-  allowReadyUpdate = new EventEmitter<boolean>();
+  allowActual = new EventEmitter<boolean>();
   enableReadyCallBack = new EventEmitter<boolean>();
   loggedIn = new EventEmitter<boolean>();
   loggedOut = new EventEmitter<boolean>();
+
   private connectionIsEstablished = false;
   private hubConnection: HubConnection;
   private proxy;
-  chat: any;
-  disableAccess = true;
+  public disableAccess = true;
 
   constructor(private zone: NgZone, public globals: GlobalService, public dialog: MatDialog) {
     this.createConnection();
@@ -46,19 +43,19 @@ export class SignalRService {
     this.hubConnection = $.hubConnection(window.localStorage.getItem('hubURL'));
     this.proxy = this.hubConnection.createHubProxy('TowHub');
 
-    this.hubConnection.reconnecting(function () {
+    this.hubConnection.reconnecting(() => {
       that.connectionEstablishing.emit(true);
     });
-    this.hubConnection.reconnected(function () {
+    this.hubConnection.reconnected(() => {
       that.connectionEstablished.emit(true);
     });
-    this.hubConnection.disconnected(function () {
+    this.hubConnection.disconnected(() => {
       that.connectionError.emit(true);
     });
   }
   private registerOnServerEvents(): void {
 
-    let that = this;
+    const that = this;
     this.proxy.on('NewMessage', (data: any) => {
       console.log(data);
     });
@@ -105,7 +102,7 @@ export class SignalRService {
       })
       .catch(err => {
         console.log('Error while establishing connection, retrying...');
-        setTimeout(function (): any { that.startConnection(); }, 5000);
+        setTimeout( () => { that.startConnection(); }, 5000);
         this.zone.run(() => { });
       });
   }
@@ -115,10 +112,10 @@ export class SignalRService {
       return;
     }
     const that = this;
-    this.proxy.invoke('getTows', from, to).done(function (tows): any {
+    this.proxy.invoke('getTows', from, to).done((tows) =>  {
       that.towsReceived.emit(tows);
       that.zone.run(() => { });
-    }).fail(function (error) {
+    }).fail((error) => {
       console.log('Invocation of getTows failed. Error: ' + error);
     });
   }
@@ -128,9 +125,9 @@ export class SignalRService {
       return;
     }
     const that = this;
-    this.proxy.invoke('UpdateActualStart', start, id).done(function (tows): any {
+    this.proxy.invoke('UpdateActualStart', start, id).done((tows) =>  {
 
-    }).fail(function (error) {
+    }).fail((error) => {
       console.log('Invocation of updateActual Start failed. Error: ' + error);
     });
   }
@@ -140,9 +137,9 @@ export class SignalRService {
       return;
     }
     const that = this;
-    this.proxy.invoke('UpdateActualEnd', end, id).done(function (tows): any {
+    this.proxy.invoke('UpdateActualEnd', end, id).done( (tows) => {
 
-    }).fail(function (error) {
+    }).fail( (error) => {
       console.log('Invocation of updateActualEnd failed. Error: ' + error);
     });
   }
@@ -152,9 +149,9 @@ export class SignalRService {
       return;
     }
     const that = this;
-    this.proxy.invoke('UpdateReadyState', state, id).done(function (tows): any {
+    this.proxy.invoke('UpdateReadyState', state, id).done( (tows) => {
 
-    }).fail(function (error) {
+    }).fail( (error) => {
       console.log('Invocation of UpdateReadyState failed. Error: ' + error);
     });
   }
@@ -163,21 +160,12 @@ export class SignalRService {
     this.globals.id = id;
     this.globals.token = token;
     const that = this;
-    this.proxy.invoke('Login', id, token).done(function (data): any {
-      // that.globals.userStatus = 'Logged In';
-      // that.allowActualEndUpdate.emit(data.AllowActualEnd);
-      // that.allowActualStartUpdate.emit(data.AllowActualStart);
-      // that.allowReadyUpdate.emit(data.AllowReady);
-
+    this.proxy.invoke('Login', id, token).done( (data) => {
 
       if (!data.View  && !data.Edit) {
         const dialogRef = that.dialog.open(ConfirmationDialog, {
           data: {
-            message: 'Login incorrect or no configured edit capability',
-            buttonText: {
-              ok: 'OK',
-              cancel: 'Cancel'
-            }
+            message: 'Login incorrect or no configured edit capability'
           },
           disableClose : true
         });
@@ -190,53 +178,41 @@ export class SignalRService {
 
         const dialogRef = that.dialog.open(ConfirmationDialog, {
           data: {
-            message: 'Login Successful. View Access Only',
-            buttonText: {
-              ok: 'OK',
-              cancel: 'Cancel'
-            }
+            message: 'Login Successful. View Access Only'
           },
           disableClose : true
         });
         dialogRef.afterClosed().subscribe((confirmed: any) => {
-          that.loggedIn.emit(true);
           that.disableAccess = false;
+          that.loggedIn.emit(true);
         });
         that.globals.userStatus = 'No Edit Access';
       } else if (data.Edit){
         const dialogRef = that.dialog.open(ConfirmationDialog, {
           data: {
-            message: 'Login Successful. View and Edit Access',
-            buttonText: {
-              ok: 'OK',
-              cancel: 'Cancel'
-            }
+            message: 'Login Successful. View and Edit Access'
           }
         });
         dialogRef.afterClosed().subscribe((confirmed: any) => {
           that.disableAccess = false;
           that.loggedIn.emit(true);
-          that.allowActualStartUpdate.emit(true);
-          that.allowActualEndUpdate.emit(true);
-          that.allowReadyUpdate.emit(true);
+          that.allowActual.emit(true);
         });
         that.globals.userStatus = 'Logged In';
       }
       that.zone.run(() => { });
-    }).fail(function (error) {
+    }).fail((error) => {
       console.log('Invocation of Login failed. Error: ' + error);
-      that.allowActualEndUpdate.emit(false);
-      that.allowActualStartUpdate.emit(false);
-      that.allowReadyUpdate.emit(false);
+      that.allowActual.emit(false);
       that.zone.run(() => { });
     });
   }
 
   public checkEnableReady(): any {
     const that = this;
-    this.proxy.invoke('EnableReady').done(function (enable: boolean): any {
+    this.proxy.invoke('EnableReady').done((enable: boolean) => {
       that.enableReadyCallBack.emit(enable);
-    }).fail(function (error) {
+    }).fail( (error) => {
       that.enableReadyCallBack.emit(false);
       console.log('Invocation of Enable Ready failed. Error: ' + error);
     });
@@ -245,21 +221,14 @@ export class SignalRService {
   public logout(): any {
     const that = this;
     that.disableAccess = true;
-    this.proxy.invoke('Logout', this.globals.id, this.globals.token).done(function (data): any {
-      that.allowActualEndUpdate.emit(false);
-      that.allowActualStartUpdate.emit(false);
-      that.allowReadyUpdate.emit(false);
+    this.proxy.invoke('Logout', this.globals.id, this.globals.token).done( (data) => {
+      that.allowActual.emit(false);
       that.loggedOut.emit(true);
-    }).fail(function (error) {
-      that.allowActualEndUpdate.emit(false);
-      that.allowActualStartUpdate.emit(false);
-      that.allowReadyUpdate.emit(false);
+    }).fail( (error) => {
+      that.allowActual.emit(false);
       that.loggedOut.emit(true);
-      console.log('Invocation of Login failed. Error: ' + error);
     });
-    that.allowActualEndUpdate.emit(false);
-    that.allowActualStartUpdate.emit(false);
-    that.allowReadyUpdate.emit(false);
+    that.allowActual.emit(false);
     that.loggedOut.emit(true);
     this.globals.userStatus = 'Logged Out';
     this.globals.id = null;
@@ -271,10 +240,10 @@ export class SignalRService {
       return;
     }
     const that = this;
-    this.proxy.invoke('getTowsOneOff', from, to).done(function (tows): any {
+    this.proxy.invoke('getTowsOneOff', from, to).done( (tows) => {
       that.towsReceived.emit(tows);
       that.zone.run(() => { });
-    }).fail(function (error) {
+    }).fail( (error) => {
       console.log('Invocation of getTowsOneOff failed. Error: ' + error);
     });
   }

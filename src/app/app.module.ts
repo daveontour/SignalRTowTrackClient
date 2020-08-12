@@ -13,8 +13,13 @@ import { CustomTooltip } from './custom-tooltip.component';
 
 
 import { MatDialogModule} from '@angular/material/dialog';
+import {MatMenuModule} from '@angular/material/menu';
+
 import {ConfirmationDialog} from './confirmation-dialog.component';
 import {LoginDialog} from './login-dialog.component';
+
+
+
 @NgModule({
   declarations: [
     AppComponent, CustomTooltip, ConfirmationDialog, LoginDialog
@@ -35,7 +40,9 @@ import {LoginDialog} from './login-dialog.component';
   bootstrap: [AppComponent],
   exports: [
     BrowserModule,
-    MatDialogModule
+    MatDialogModule,
+    MatMenuModule,
+
   ],
   entryComponents: [ConfirmationDialog, LoginDialog],
 })

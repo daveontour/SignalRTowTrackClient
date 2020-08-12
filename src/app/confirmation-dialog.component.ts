@@ -3,7 +3,6 @@ import { MatDialogRef, MatDialog, MAT_DIALOG_DATA } from '@angular/material/dial
 import { NgZone } from '@angular/core';
 
 @Component({
-    selector: 'confirmation-dialog',
     templateUrl: 'confirmation-dialog.html',
 })
 export class ConfirmationDialog {
