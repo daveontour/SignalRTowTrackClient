@@ -14,6 +14,7 @@ declare var $: any;
 })
 export class SignalRService {
 
+
   connectionEstablished = new EventEmitter<boolean>();
   connectionEstablishing = new EventEmitter<boolean>();
   connectionError = new EventEmitter<boolean>();
@@ -120,6 +121,16 @@ export class SignalRService {
     });
   }
 
+  public getTowsForFlightRange(rangeDateFrom: any, rangeDateTo: any, type: any): any {
+    const that = this;
+    this.proxy.invoke('getTowsForFlightRange', rangeDateFrom, rangeDateTo, type).done((tows) =>  {
+      that.towsReceived.emit(tows);
+      that.zone.run(() => { });
+    }).fail((error) => {
+      console.log('Invocation of getTows failed. Error: ' + error);
+    });
+  }
+
   public updateActualStart(start: any, id: any): any {
     if (this.disableAccess){
       return;
@@ -188,17 +199,21 @@ export class SignalRService {
         });
         that.globals.userStatus = 'No Edit Access';
       } else if (data.Edit){
-        const dialogRef = that.dialog.open(ConfirmationDialog, {
-          data: {
-            message: 'Login Successful. View and Edit Access'
-          }
-        });
-        dialogRef.afterClosed().subscribe((confirmed: any) => {
-          that.disableAccess = false;
-          that.loggedIn.emit(true);
-          that.allowActual.emit(true);
-        });
+        that.disableAccess = false;
+        that.loggedIn.emit(true);
+        that.allowActual.emit(true);
         that.globals.userStatus = 'Logged In';
+        // const dialogRef = that.dialog.open(ConfirmationDialog, {
+        //   data: {
+        //     message: 'Login Successful. View and Edit Access'
+        //   }
+        // });
+        // dialogRef.afterClosed().subscribe((confirmed: any) => {
+        //   that.disableAccess = false;
+        //   that.loggedIn.emit(true);
+        //   that.allowActual.emit(true);
+        // });
+        
       }
       that.zone.run(() => { });
     }).fail((error) => {

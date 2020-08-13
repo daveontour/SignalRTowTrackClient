@@ -30,6 +30,9 @@ export class AppComponent implements OnInit {
   public rangeTo: number;
   public rangeDate: any;
 
+  public rangeDateFrom: any;
+  public rangeDateTo: any;
+
   public editorDate: any;
   public editorTime: any;
 
@@ -37,8 +40,11 @@ export class AppComponent implements OnInit {
   public showDateRange = false;
   public enableDisplaySwitcher = false;
   public showCompleted = false;
+  public showAll = true;
   public tooltipShowDelay = 0;
   public frameworkComponents;
+
+  public selectMode = 'Monitor';
 
   public lastUpdate: string;
   public gridApi: any;
@@ -312,7 +318,7 @@ export class AppComponent implements OnInit {
       try {
         element = that.transformRow(element);
 
-        if (that.checkAddRow(element)) {
+        if (that.globals.rangeMode === 'range' || that.checkAddRow(element) ) {
           rowsToAdd.push(element);
         }
       } catch (ex) {
@@ -458,6 +464,13 @@ export class AppComponent implements OnInit {
     this.globals.zeroTime = moment().add(this.offsetFrom, 'minutes');
 
     this.hubService.getTowsOneOff(this.offsetFrom, this.offsetTo);
+
+  }
+  setSelectedFlightRange(): any {
+    this.globals.rangeMode = 'range';
+    this.displayMode = 'Fixed';
+
+    this.hubService.getTowsForFlightRange(this.rangeDateFrom, this.rangeDateTo, $('#towTypes').val());
 
   }
   getRangeBulletClass(): any {

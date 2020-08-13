@@ -1,84 +1,99 @@
-<div style="height:45px; align-items: center;display: flex; padding-left: 5px; font-size: 14px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+<div
+  style="height:45px; align-items: center;display: flex; padding-left: 5px; font-size: 14px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
   <span style="font-size: 18px; font-weight: bold; margin-right: 50px; margin-left: 10px;">SITA AMS Tow Tracker</span>
 
+<div>Select Mode
+  <select  name="modeType" id="modeType" style="height:25px;width:100px" [(ngModel)]='selectMode'>
+    <option value="Monitor" selected="selected">Monitor</option>
+    <option value="FlightReview">Tow for Flights Review</option>
+    <option value="TowReview">Tows by Day Review</option>
+  </select>
+</div>
+  <div style="display: flex; flex-direction: column;">
+    <div *ngIf='selectMode == "Monitor"' style="margin-left:20px;height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px">
 
-  <div style="margin-left:20px;height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px">
+<!--
+      <span style="width:5px">
+        <span [ngClass]="getOffsetBulletClass()">&bull;</span>
+      </span>
+    -->
+      <label>Scheduled Tow Start From:</label>
+      <select name="from" [(ngModel)]='offsetFrom'>
+        <option value="-300" selected="selected">-5 hours</option>
+        <option value="-240">-4 hours</option>
+        <option value="-180">-3 hours</option>
+        <option value="-120">-2 hours</option>
+        <option value="-60">-1 hour</option>
+        <option value="0">0 hour</option>
+        <option value="60">+1 hour</option>
+        <option value="120">+2 hour</option>
+        <option value="180">+3 hour</option>
 
-    
-    <span style="width:5px">
-      <span [ngClass]="getOffsetBulletClass()">&bull;</span>
-    </span>
-    <label>Current Time</label>
+      </select>
+      <label>To:</label>
+      <select name="to" [(ngModel)]='offsetTo'>
+        <option value="-180">-3 hours</option>
+        <option value="-120">-2 hours</option>
+        <option value="-60">-1 hour</option>
+        <option value="0">0 hour</option>
+        <option value="60">+1 hour</option>
+        <option value="120">+2 hour</option>
+        <option value="180">+3 hour</option>
+        <option value="240" selected="selected">+4 hour</option>
+        <option value="300">+5 hour</option>
+        <option value="360">+6 hour</option>
+      </select>
+      <label style="margin-left: 5px;">Show Completed Tows:</label>
+      <input type="checkbox" [(ngModel)]='showCompleted' (change)='loadData()'>
+      <button (click)="setCurrentRange()">Load</button>
 
-    <label>From:</label>
-    <select name="from" [(ngModel)]='offsetFrom'>
-      <option value="-300" selected="selected">-5 hours</option>
-      <option value="-240">-4 hours</option>
-      <option value="-180">-3 hours</option>
-      <option value="-120" >-2 hours</option>
-      <option value="-60">-1 hour</option>
-      <option value="0">0 hour</option>
-      <option value="60">+1 hour</option>
-      <option value="120">+2 hour</option>
-      <option value="180">+3 hour</option>
-
-    </select>
-    <label>To:</label>
-    <select name="to" [(ngModel)]='offsetTo'>
-      <option value="-180">-3 hours</option>
-      <option value="-120">-2 hours</option>
-      <option value="-60">-1 hour</option>
-      <option value="0">0 hour</option>
-      <option value="60">+1 hour</option>
-      <option value="120">+2 hour</option>
-      <option value="180">+3 hour</option>
-      <option value="240"  selected="selected">+4 hour</option>
-      <option value="300">+5 hour</option>
-      <option value="360">+6 hour</option>
-    </select>
-
-    <button (click)="setCurrentRange()">Load</button>
-
-  </div>
-  <div *ngIf='showDateRange'  style="margin-left:20px;height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px">
-    <span style="width:5px">
-      <span [ngClass]="getRangeBulletClass()">&bull;</span>
-    </span>
-    <label>Date:</label>
-    <input class="gridinput" [(ngModel)]="rangeDate" style="width:100px" type="date">
-  <label>From:</label>
+    </div>
+    <div *ngIf='showDateRange && selectMode == "FlightReview"'
+      style="margin-left:20px;height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px">
+      <span style="width:5px">
+        <span [ngClass]="getRangeBulletClass()">&bull;</span>
+      </span>
+      <label>Tows for Flights Between:</label>
+      <input class="gridinput" [(ngModel)]="rangeDateFrom" style="width:100px" type="date">
+      <label>and</label>
+      <input class="gridinput" [(ngModel)]="rangeDateTo" style="width:100px" type="date">
+      <select class="gridinput" name="towTypes" id="towTypes" style="width:100px">
+        <option value="Incomplete" selected="selected">Incomplete</option>
+        <option value="Complete">Complete</option>
+        <option value="All">All</option>
+      </select>
+      <!--  <label>From:</label>
   <input  class="gridinput" [(ngModel)]='rangeFrom' type='time' style='width:60px'>
   <label>To:</label>
   <input  class="gridinput" [(ngModel)]='rangeTo' type='time' style='width:60px'>
-    <button (click)="setSelectedRange()">Load</button>
+-->
+      <button (click)="setSelectedFlightRange()">Load</button>
+
+    </div>
 
   </div>
+  <div
+    style="margin-left:auto; margin-right:10px; height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px;">
 
-  <div style="margin-left:auto; margin-right:10px; height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px;">
-    <label>Show Completed:</label>
-    <input type="checkbox" [(ngModel)]='showCompleted' (change)='loadData()'>
 
     <button (click)="sortDefault()" style='font-size: 12px; width:100px'>Default Sort</button>
     <button id="copyBtn" (click)="copyToClipboard()" style='font-size: 12px; width:50px'>Copy</button>
-    
-    <button id = "loginBtn" (click)="openDialog()" style='margin-left: 10px;font-size: 12px; width:50px; display: none'>Login</button>
+
+    <button id="loginBtn" (click)="openDialog()"
+      style='margin-left: 10px;font-size: 12px; width:50px; display: none'>Login</button>
     <button id="logoutBtn" (click)="logout()" style='font-size: 12px; width:50px; display: none'>Logout</button>
 
-    
+
   </div>
 </div>
 
 
 
 <ag-grid-angular style="width: 100%;  height: calc(100vh - 75px);" class="ag-theme-alpine-dark" [rowData]="rowData"
-  [columnDefs]="columnDefs" (gridReady)="onGridReady($event)" [animateRows]="true"  [getRowNodeId]="getRowNodeId"
-  [defaultColDef]="defaultColDef"
-  [tooltipShowDelay]="tooltipShowDelay"
-  [frameworkComponents]="frameworkComponents"
-  [components]="components"
-  (cellValueChanged)="onCellValueChanged($event)"
-  [overlayLoadingTemplate]="overlayLoadingTemplate"
-  >
+  [columnDefs]="columnDefs" (gridReady)="onGridReady($event)" [animateRows]="true" [getRowNodeId]="getRowNodeId"
+  [defaultColDef]="defaultColDef" [tooltipShowDelay]="tooltipShowDelay" [frameworkComponents]="frameworkComponents"
+  [components]="components" (cellValueChanged)="onCellValueChanged($event)"
+  [overlayLoadingTemplate]="overlayLoadingTemplate">
 </ag-grid-angular>
 <div style="height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px">
   <span style="margin-left: 10px; font-size: 11px">Status:</span>
@@ -90,5 +105,6 @@
   <span style="margin-left: 10px; font-size: 11px">Display Mode:</span>
   <span style="margin-left: 10px; font-size: 11px;" [ngClass]="displayMode">{{displayMode}}</span>
   <span style="margin-left: 10px; font-size: 11px">User Status:</span>
-  <span style="margin-left: 10px; font-size: 11px;" [ngClass]="{'LoggedIn': globals.userStatus =='Logged In','LoggedOut': globals.userStatus =='Logged Out' || globals.userStatus =='No Access' ,'NoEdit': globals.userStatus =='No Edit Access'}">{{globals.userStatus}}</span>
+  <span style="margin-left: 10px; font-size: 11px;"
+    [ngClass]="{'LoggedIn': globals.userStatus =='Logged In','LoggedOut': globals.userStatus =='Logged Out' || globals.userStatus =='No Access' ,'NoEdit': globals.userStatus =='No Edit Access'}">{{globals.userStatus}}</span>
 </div>
