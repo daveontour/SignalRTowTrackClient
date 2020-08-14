@@ -123,11 +123,34 @@ export class SignalRService {
 
   public getTowsForFlightRange(rangeDateFrom: any, rangeDateTo: any, type: any): any {
     const that = this;
+    const dialogRef = that.dialog.open(ConfirmationDialog, {
+      data: {
+        message: 'This might take a while'
+      },
+      disableClose : true
+    });
     this.proxy.invoke('getTowsForFlightRange', rangeDateFrom, rangeDateTo, type).done((tows) =>  {
+      dialogRef.close();
       that.towsReceived.emit(tows);
       that.zone.run(() => { });
     }).fail((error) => {
-      console.log('Invocation of getTows failed. Error: ' + error);
+      console.log('Invocation of getTowsForFlightRange failed. Error: ' + error);
+    });
+  }
+  public getTowsForDateRange(rangeDateFrom: any, rangeDateTo: any, type: any): any {
+    const that = this;
+    const dialogRef = that.dialog.open(ConfirmationDialog, {
+      data: {
+        message: 'This might take a while'
+      },
+      disableClose : true
+    });
+    this.proxy.invoke('getTowsForDateRange', rangeDateFrom, rangeDateTo, type).done((tows) =>  {
+      dialogRef.close();
+      that.towsReceived.emit(tows);
+      that.zone.run(() => { });
+    }).fail((error) => {
+      console.log('Invocation of getTowsForDateRange failed. Error: ' + error);
     });
   }
 

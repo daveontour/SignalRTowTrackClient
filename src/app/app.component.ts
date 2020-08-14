@@ -20,7 +20,7 @@ import { ConfirmationDialog } from './confirmation-dialog.component';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  public displayMode = 'Rolling';
+  public displayMode = 'Monitor';
   public rowData: any;
   public getRowNodeId: any;
   public offsetFrom = -300;
@@ -53,7 +53,7 @@ export class AppComponent implements OnInit {
   public status = 'Connecting';
   public components;
   public enableReady = false;
-  public overlayLoadingTemplate =  '<span class="ag-overlay-loading-center">Please log in to load the tows</span>';
+  public overlayLoadingTemplate = '<span class="ag-overlay-loading-center">Please log in to load the tows</span>';
   public columnDefs = [
     { headerName: 'Tow ID', field: 'TowingID', tooltipComponent: 'customPlanTooltip', tooltipField: 'TowingID' },
     {
@@ -222,6 +222,12 @@ export class AppComponent implements OnInit {
     this.gridApi.setSortModel(sort);
   }
   logout(): any {
+    this.rowData = [];
+    this.numRows = 0;
+    this.globals.rangeMode = 'offset';
+    this.displayMode = 'Monitor';
+    this.selectMode = 'Monitor';
+
     this.hubService.logout();
   }
   ngOnInit(): void {
@@ -252,7 +258,7 @@ export class AppComponent implements OnInit {
       that.gridColumnApi.setColumnsVisible(['ActualEnd'], !allow);
       that.gridColumnApi.setColumnsVisible(['ActualEndEdit'], allow);
       that.gridColumnApi.setColumnsVisible(['ActualStart'], !allow);
-      that.gridColumnApi.setColumnsVisible(['ActualStartEdit'], allow); 
+      that.gridColumnApi.setColumnsVisible(['ActualStartEdit'], allow);
 
       if (that.enableReady) {
         that.gridColumnApi.setColumnsVisible(['Ready'], !allow);
@@ -262,7 +268,7 @@ export class AppComponent implements OnInit {
     });
 
     this.hubService.loggedIn.subscribe((allow: boolean) => {
-      if (allow){
+      if (allow) {
         that.hubService.getTows(that.offsetFrom, that.offsetTo);
       } else {
         that.openDialog();
@@ -270,8 +276,8 @@ export class AppComponent implements OnInit {
     });
 
     this.hubService.loggedOut.subscribe((allow: boolean) => {
-        that.openDialog();
-        that.rowData = [];
+      that.openDialog();
+      that.rowData = [];
     });
 
 
@@ -318,7 +324,7 @@ export class AppComponent implements OnInit {
       try {
         element = that.transformRow(element);
 
-        if (that.globals.rangeMode === 'range' || that.checkAddRow(element) ) {
+        if (that.globals.rangeMode === 'range' || that.checkAddRow(element)) {
           rowsToAdd.push(element);
         }
       } catch (ex) {
@@ -332,7 +338,14 @@ export class AppComponent implements OnInit {
     this.numRows = rowsToAdd.length;
     this.ref.markForCheck();
   }
+
+
   updateGridRow(updatedTow: any): void {
+
+    // Only process updates in Monitor Mode
+    if (this.selectMode !== 'Monitor') {
+      return;
+    }
 
     if (this.checkAddRow(updatedTow)) {
       updatedTow = this.transformRow(updatedTow);
@@ -351,6 +364,10 @@ export class AppComponent implements OnInit {
 
   }
   addGridRow(addTow: any): void {
+    // Only process updates in Monitor Mode
+    if (this.selectMode !== 'Monitor') {
+      return;
+    }
     addTow = this.transformRow(addTow);
     if (this.checkAddRow(addTow)) {
       const itemsToAdd = [addTow];
@@ -360,6 +377,10 @@ export class AppComponent implements OnInit {
     }
   }
   deleteGridRow(removeTow: any): void {
+    // Only process updates in Monitor Mode
+    if (this.selectMode !== 'Monitor') {
+      return;
+    }
     const itemsToRemove = [removeTow];
     this.gridApi.updateRowData({ remove: itemsToRemove });
     this.lastUpdate = moment().format('HH:mm:ss');
@@ -438,11 +459,10 @@ export class AppComponent implements OnInit {
   }
   setCurrentRange(): any {
     this.globals.rangeMode = 'offset';
-    this.displayMode = 'Rolling';
+    this.displayMode = 'Monitor';
     this.globals.offsetFrom = this.offsetFrom;
     this.globals.offsetTo = this.offsetTo;
     this.globals.zeroTime = moment().add(this.offsetFrom, 'minutes');
-    // this.director.minuteTick();
     this.loadData();
   }
   setSelectedRange(): any {
@@ -466,13 +486,30 @@ export class AppComponent implements OnInit {
     this.hubService.getTowsOneOff(this.offsetFrom, this.offsetTo);
 
   }
+
+  modeSelectChange(): any {
+    this.rowData = [];
+    this.numRows = 0;
+    if (this.selectMode === 'Monitor') {
+      this.globals.rangeMode = 'offset';
+      this.displayMode = 'Monitor';
+      this.setCurrentRange();
+    } else {
+      this.globals.rangeMode = 'range';
+      this.displayMode = 'Review';
+    }
+  }
   setSelectedFlightRange(): any {
     this.globals.rangeMode = 'range';
-    this.displayMode = 'Fixed';
-
+    this.displayMode = 'Review';
     this.hubService.getTowsForFlightRange(this.rangeDateFrom, this.rangeDateTo, $('#towTypes').val());
-
   }
+  setSelectedDateRange(): any {
+    this.globals.rangeMode = 'range';
+    this.displayMode = 'Review';
+    this.hubService.getTowsForDateRange(this.rangeDateFrom, this.rangeDateTo, $('#towTypes').val());
+  }
+
   getRangeBulletClass(): any {
     if (this.globals.rangeMode !== 'offset') {
       return 'show';
@@ -491,7 +528,7 @@ export class AppComponent implements OnInit {
 
     let cb = 'TowingId,Status,ReadyState,FromStand,ToStand,ScheduledStart,ScheduledEnd,ActualStart,ActualEnd,AircraftRegistration,AircraftType,Arrival,Departure,TowPlan\n';
 
-    for (let i = 0; i < this.numRows; i++){
+    for (let i = 0; i < this.numRows; i++) {
       const rowData = this.gridApi.getDisplayedRowAtIndex(i).data;
       cb += rowData.TowingID + ',';
       cb += rowData.Status + ',';
@@ -519,9 +556,9 @@ export class AppComponent implements OnInit {
       data: {
         message: 'Grid data copied to clipboard',
       },
-      disableClose : true
+      disableClose: true
     });
-}
+  }
   openDialog(): any {
 
     const that = this;
@@ -533,7 +570,7 @@ export class AppComponent implements OnInit {
           cancel: 'Cancel'
         }
       },
-      disableClose : true
+      disableClose: true
     });
 
     dialogRef.afterClosed().subscribe((data: any) => {

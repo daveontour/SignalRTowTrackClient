@@ -3,7 +3,7 @@
   <span style="font-size: 18px; font-weight: bold; margin-right: 50px; margin-left: 10px;">SITA AMS Tow Tracker</span>
 
 <div>Select Mode
-  <select  name="modeType" id="modeType" style="height:25px;width:100px" [(ngModel)]='selectMode'>
+  <select  name="modeType" id="modeType" style="height:25px;width:125px; font-size: 12px;" [(ngModel)]='selectMode' (change)='modeSelectChange()'>
     <option value="Monitor" selected="selected">Monitor</option>
     <option value="FlightReview">Tow for Flights Review</option>
     <option value="TowReview">Tows by Day Review</option>
@@ -18,7 +18,7 @@
       </span>
     -->
       <label>Scheduled Tow Start From:</label>
-      <select name="from" [(ngModel)]='offsetFrom'>
+      <select name="from" [(ngModel)]='offsetFrom' style="font-size: 12px;">
         <option value="-300" selected="selected">-5 hours</option>
         <option value="-240">-4 hours</option>
         <option value="-180">-3 hours</option>
@@ -31,7 +31,7 @@
 
       </select>
       <label>To:</label>
-      <select name="to" [(ngModel)]='offsetTo'>
+      <select name="to" [(ngModel)]='offsetTo' style="font-size: 12px;">
         <option value="-180">-3 hours</option>
         <option value="-120">-2 hours</option>
         <option value="-60">-1 hour</option>
@@ -45,31 +45,38 @@
       </select>
       <label style="margin-left: 5px;">Show Completed Tows:</label>
       <input type="checkbox" [(ngModel)]='showCompleted' (change)='loadData()'>
-      <button (click)="setCurrentRange()">Load</button>
+      <button (click)="setCurrentRange()" style="font-size:12px;">Load</button>
 
     </div>
     <div *ngIf='showDateRange && selectMode == "FlightReview"'
       style="margin-left:20px;height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px">
-      <span style="width:5px">
-        <span [ngClass]="getRangeBulletClass()">&bull;</span>
-      </span>
       <label>Tows for Flights Between:</label>
-      <input class="gridinput" [(ngModel)]="rangeDateFrom" style="width:100px" type="date">
+      <input class="gridinput" [(ngModel)]="rangeDateFrom" style="font-size:12px;width:120px" type="date">
       <label>and</label>
-      <input class="gridinput" [(ngModel)]="rangeDateTo" style="width:100px" type="date">
-      <select class="gridinput" name="towTypes" id="towTypes" style="width:100px">
+      <input class="gridinput" [(ngModel)]="rangeDateTo" style="font-size:12px;width:120px" type="date">
+      <select class="gridinput" name="towTypes" id="towTypes" style="width:100px; font-size: 12px;">
         <option value="Incomplete" selected="selected">Incomplete</option>
         <option value="Complete">Complete</option>
         <option value="All">All</option>
       </select>
-      <!--  <label>From:</label>
-  <input  class="gridinput" [(ngModel)]='rangeFrom' type='time' style='width:60px'>
-  <label>To:</label>
-  <input  class="gridinput" [(ngModel)]='rangeTo' type='time' style='width:60px'>
--->
-      <button (click)="setSelectedFlightRange()">Load</button>
+      <button (click)="setSelectedFlightRange()" style="font-size:12px;">Load</button>
 
     </div>
+
+    <div *ngIf='showDateRange && selectMode == "TowReview"'
+    style="margin-left:20px;height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px">
+    <label>Tows Between:</label>
+    <input class="gridinput" [(ngModel)]="rangeDateFrom" style="font-size:12px;width:120px" type="date">
+    <label>and</label>
+    <input class="gridinput" [(ngModel)]="rangeDateTo" style="font-size:12px;width:120px" type="date">
+    <select class="gridinput" name="towTypes" id="towTypes" style="font-size:12px;width:100px">
+      <option value="Incomplete" selected="selected">Incomplete</option>
+      <option value="Complete">Complete</option>
+      <option value="All">All</option>
+    </select>
+    <button (click)="setSelectedDateRange()" style="font-size:12px">Load</button>
+
+  </div>
 
   </div>
   <div
@@ -96,15 +103,15 @@
   [overlayLoadingTemplate]="overlayLoadingTemplate">
 </ag-grid-angular>
 <div style="height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px">
-  <span style="margin-left: 10px; font-size: 11px">Status:</span>
-  <span style="margin-left: 10px; font-size: 11px" [ngClass]="status">{{status}}</span>
-  <span style="margin-left: 10px; font-size: 11px">Last Update:</span>
-  <span style="margin-left: 10px; font-size: 11px;color:cadetblue">{{lastUpdate}}</span>
-  <span style="margin-left: 10px; font-size: 11px">Rows:</span>
-  <span style="margin-left: 10px; font-size: 11px;color:cadetblue">{{numRows}}</span>
-  <span style="margin-left: 10px; font-size: 11px">Display Mode:</span>
-  <span style="margin-left: 10px; font-size: 11px;" [ngClass]="displayMode">{{displayMode}}</span>
-  <span style="margin-left: 10px; font-size: 11px">User Status:</span>
-  <span style="margin-left: 10px; font-size: 11px;"
+  <span style="margin-left: 10px; font-size: 14px">Status:</span>
+  <span style="margin-left: 10px; font-size: 14px" [ngClass]="status">{{status}}</span>
+  <span style="margin-left: 10px; font-size: 14px">Last Update:</span>
+  <span style="margin-left: 10px; font-size: 14px;color:cadetblue">{{lastUpdate}}</span>
+  <span style="margin-left: 10px; font-size: 14px">Rows:</span>
+  <span style="margin-left: 10px; font-size: 14px;color:cadetblue">{{numRows}}</span>
+  <span style="margin-left: 10px; font-size: 14px">Display Mode:</span>
+  <span style="margin-left: 10px; font-size: 14px;" [ngClass]="displayMode">{{displayMode}}</span>
+  <span style="margin-left: 10px; font-size: 14px">User Status:</span>
+  <span style="margin-left: 10px; font-size: 14px;"
     [ngClass]="{'LoggedIn': globals.userStatus =='Logged In','LoggedOut': globals.userStatus =='Logged Out' || globals.userStatus =='No Access' ,'NoEdit': globals.userStatus =='No Edit Access'}">{{globals.userStatus}}</span>
 </div>

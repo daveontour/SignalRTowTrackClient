@@ -26,16 +26,34 @@
 
 .Connecting {
   color: yellow;
+  animation: blinker 1s linear infinite;
 }
 .NoEdit {
   color: yellow;
 }
   .Disconnected {
     color: red;
+    animation: blinker 1s linear infinite;
   }
+
 
   .LoggedIn {
     color: lime;
+  }
+
+  .Monitor {
+    color: lime;
+
+  }
+  .Review {
+    color: yellow;
+    animation: blinker 1s linear infinite;
+  }
+
+  @keyframes blinker {
+    50% {
+      opacity: 0;
+    }
   }
   .LoggedOut {
     color: red;
