@@ -45,6 +45,7 @@ export class AppComponent implements OnInit {
   public frameworkComponents;
 
   public selectMode = 'Monitor';
+  public loadingStatus = '';
 
   public lastUpdate: string;
   public gridApi: any;
@@ -86,13 +87,16 @@ export class AppComponent implements OnInit {
     { headerName: 'From', field: 'From', tooltipComponent: 'customStandTooltip', tooltipField: 'From', flex: 1 },
     { headerName: 'To', field: 'To', tooltipComponent: 'customStandTooltip', tooltipField: 'To', flex: 1 },
     // tslint:disable-next-line:max-line-length
-    { headerName: 'Start', field: 'ScheduledStart', width: 120, sortable: true, valueFormatter: this.timeFormatter, comparator: this.timeComparator },
-    { headerName: 'End', field: 'ScheduledEnd', sortable: true, valueFormatter: this.timeFormatter, comparator: this.timeComparator },
+    { headerName: 'Start', field: 'ScheduledStart', width: 120, tooltipComponent: 'customTooltip', tooltipField: 'ScheduledStart', sortable: true, valueFormatter: this.timeFormatter, comparator: this.timeComparator },
     // tslint:disable-next-line:max-line-length
-    { headerName: 'Act. Start', field: 'ActualStart', colId: 'ActualStartEdit', editable: true, cellEditor: 'yearCellEditor', valueFormatter: this.timeFormatter, hide: true },
-    { headerName: 'Act. Start', field: 'ActualStart', colId: 'ActualStart', valueFormatter: this.timeFormatter },
-    { headerName: 'Act. End', field: 'ActualEnd', colId: 'ActualEndEdit', valueFormatter: this.timeFormatter, editable: true, cellEditor: 'yearCellEditor', hide: true },
-    { headerName: 'Act. End', field: 'ActualEnd', colId: 'ActualEnd', valueFormatter: this.timeFormatter },
+    { headerName: 'End', field: 'ScheduledEnd', tooltipComponent: 'customTooltip', tooltipField: 'ScheduledStart', sortable: true, valueFormatter: this.timeFormatter, comparator: this.timeComparator },
+    // tslint:disable-next-line:max-line-length
+    { headerName: 'Act. Start', field: 'ActualStart', colId: 'ActualStartEdit', tooltipComponent: 'customTooltip', tooltipField: 'ScheduledStart', editable: true, cellEditor: 'yearCellEditor', valueFormatter: this.timeFormatter, hide: true },
+    { headerName: 'Act. Start', field: 'ActualStart', colId: 'ActualStart', tooltipComponent: 'customTooltip', tooltipField: 'ScheduledStart', valueFormatter: this.timeFormatter },
+    // tslint:disable-next-line:max-line-length
+    { headerName: 'Act. End', field: 'ActualEnd', colId: 'ActualEndEdit', tooltipComponent: 'customTooltip', tooltipField: 'ScheduledStart', valueFormatter: this.timeFormatter, editable: true, cellEditor: 'yearCellEditor', hide: true },
+    // tslint:disable-next-line:max-line-length
+    { headerName: 'Act. End', field: 'ActualEnd', colId: 'ActualEnd', tooltipComponent: 'customTooltip', tooltipField: 'ScheduledStart', valueFormatter: this.timeFormatter },
     { headerName: 'A/C Type', field: 'AircraftType' },
     { headerName: 'A/C Rego', field: 'AircraftRegistration' },
     { headerName: 'Flights', field: 'Flights', tooltipField: 'TowingID', flex: 3, tooltipComponent: 'customPlanTooltip', }
@@ -141,8 +145,8 @@ export class AppComponent implements OnInit {
       ['Started', 22],
       ['Completed', 80],
       ['Completed (DQM Issue)', 25],
-      ['Completed (Early)', 27],
-      ['Completed (Late)', 26],
+      ['Completed (Early)', 57],
+      ['Completed (Late)', 56],
       ['Started (Overtime)', 2],
     ]);
 
@@ -245,6 +249,7 @@ export class AppComponent implements OnInit {
       that.updateGridRow(message);
     });
     this.hubService.towsReceived.subscribe((message: string) => {
+      that.loadingStatus = '';
       that.loadGrid(message);
     });
     this.hubService.connectionError.subscribe((message: string) => {
@@ -342,16 +347,16 @@ export class AppComponent implements OnInit {
 
   updateGridRow(updatedTow: any): void {
 
-    // Only process updates in Monitor Mode
-    if (this.selectMode !== 'Monitor') {
-      return;
-    }
+    // // Only process updates in Monitor Mode
+    // if (this.selectMode !== 'Monitor') {
+    //   return;
+    // }
 
+    debugger;
     if (this.checkAddRow(updatedTow)) {
       updatedTow = this.transformRow(updatedTow);
       const itemsToUpdate = [];
       itemsToUpdate.push(updatedTow);
-      console.log(updatedTow);
       this.gridApi.updateRowData({ update: itemsToUpdate });
       this.numRows = this.gridApi.getDisplayedRowCount();
     } else {
@@ -364,7 +369,7 @@ export class AppComponent implements OnInit {
 
   }
   addGridRow(addTow: any): void {
-    // Only process updates in Monitor Mode
+    // // Only process updates in Monitor Mode
     if (this.selectMode !== 'Monitor') {
       return;
     }
@@ -446,6 +451,10 @@ export class AppComponent implements OnInit {
     if (diff < this.globals.offsetFrom || diff > this.globals.offsetTo) {
       return false;
     }
+    if (this.selectMode !== 'Monitor'){
+      return true;
+    }
+
     if (!this.showCompleted && updatedTow.Status === 'COMPLETED') {
       return false;
     }
@@ -458,33 +467,13 @@ export class AppComponent implements OnInit {
     return true;
   }
   setCurrentRange(): any {
+    this.loadingStatus = 'Loading Data';
     this.globals.rangeMode = 'offset';
     this.displayMode = 'Monitor';
     this.globals.offsetFrom = this.offsetFrom;
     this.globals.offsetTo = this.offsetTo;
     this.globals.zeroTime = moment().add(this.offsetFrom, 'minutes');
     this.loadData();
-  }
-  setSelectedRange(): any {
-    this.globals.rangeMode = 'range';
-    this.displayMode = 'Fixed';
-
-    const mss = this.rangeDate + ' ' + this.rangeFrom;
-    const ms = moment(mss, 'YYYY-MM-DD HH:mm');
-
-    const mse = this.rangeDate + ' ' + this.rangeTo;
-    const me = moment(mse, 'YYYY-MM-DD HH:mm');
-
-    this.offsetFrom = ms.diff(moment(), 'm');
-    this.offsetTo = me.diff(moment(), 'm');
-    this.globals.offsetFrom = this.offsetFrom;
-    this.globals.offsetTo = this.offsetTo;
-
-
-    this.globals.zeroTime = moment().add(this.offsetFrom, 'minutes');
-
-    this.hubService.getTowsOneOff(this.offsetFrom, this.offsetTo);
-
   }
 
   modeSelectChange(): any {
@@ -500,11 +489,27 @@ export class AppComponent implements OnInit {
     }
   }
   setSelectedFlightRange(): any {
+
+    const ms = moment(this.rangeDateFrom, 'YYYY-MM-DD');
+    const me = moment(this.rangeDateTo, 'YYYY-MM-DD');
+
+    this.globals.offsetFrom = ms.diff(moment(), 'm');
+    this.globals.offsetTo = me.diff(moment(), 'm');
+
+    this.loadingStatus = 'Loading Data';
     this.globals.rangeMode = 'range';
     this.displayMode = 'Review';
     this.hubService.getTowsForFlightRange(this.rangeDateFrom, this.rangeDateTo, $('#towTypes').val());
   }
   setSelectedDateRange(): any {
+
+    const ms = moment(this.rangeDateFrom, 'YYYY-MM-DD');
+    const me = moment(this.rangeDateTo, 'YYYY-MM-DD');
+
+    this.globals.offsetFrom = ms.diff(moment(), 'm');
+    this.globals.offsetTo = me.diff(moment(), 'm');
+
+    this.loadingStatus = 'Loading Data';
     this.globals.rangeMode = 'range';
     this.displayMode = 'Review';
     this.hubService.getTowsForDateRange(this.rangeDateFrom, this.rangeDateTo, $('#towTypes').val());

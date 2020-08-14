@@ -114,4 +114,5 @@
   <span style="margin-left: 10px; font-size: 14px">User Status:</span>
   <span style="margin-left: 10px; font-size: 14px;"
     [ngClass]="{'LoggedIn': globals.userStatus =='Logged In','LoggedOut': globals.userStatus =='Logged Out' || globals.userStatus =='No Access' ,'NoEdit': globals.userStatus =='No Edit Access'}">{{globals.userStatus}}</span>
+  <span class="Loading">{{loadingStatus}}</span>
 </div>

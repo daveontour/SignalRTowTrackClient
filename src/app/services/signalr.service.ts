@@ -123,14 +123,7 @@ export class SignalRService {
 
   public getTowsForFlightRange(rangeDateFrom: any, rangeDateTo: any, type: any): any {
     const that = this;
-    const dialogRef = that.dialog.open(ConfirmationDialog, {
-      data: {
-        message: 'This might take a while'
-      },
-      disableClose : true
-    });
     this.proxy.invoke('getTowsForFlightRange', rangeDateFrom, rangeDateTo, type).done((tows) =>  {
-      dialogRef.close();
       that.towsReceived.emit(tows);
       that.zone.run(() => { });
     }).fail((error) => {
@@ -139,14 +132,8 @@ export class SignalRService {
   }
   public getTowsForDateRange(rangeDateFrom: any, rangeDateTo: any, type: any): any {
     const that = this;
-    const dialogRef = that.dialog.open(ConfirmationDialog, {
-      data: {
-        message: 'This might take a while'
-      },
-      disableClose : true
-    });
+
     this.proxy.invoke('getTowsForDateRange', rangeDateFrom, rangeDateTo, type).done((tows) =>  {
-      dialogRef.close();
       that.towsReceived.emit(tows);
       that.zone.run(() => { });
     }).fail((error) => {
@@ -159,8 +146,10 @@ export class SignalRService {
       return;
     }
     const that = this;
-    this.proxy.invoke('UpdateActualStart', start, id).done((tows) =>  {
-
+    this.proxy.invoke('UpdateActualStart', start, id).done((msg) =>  {
+      if (msg !== 'OK'){
+        alert(msg);
+      }
     }).fail((error) => {
       console.log('Invocation of updateActual Start failed. Error: ' + error);
     });
@@ -171,8 +160,10 @@ export class SignalRService {
       return;
     }
     const that = this;
-    this.proxy.invoke('UpdateActualEnd', end, id).done( (tows) => {
-
+    this.proxy.invoke('UpdateActualEnd', end, id).done( (msg) => {
+      if (msg !== 'OK'){
+        alert(msg);
+      }
     }).fail( (error) => {
       console.log('Invocation of updateActualEnd failed. Error: ' + error);
     });

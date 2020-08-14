@@ -36,6 +36,15 @@
     animation: blinker 1s linear infinite;
   }
 
+  .Loading {
+    margin-left: auto; 
+    margin-right: 30px;
+    font-size: 16px;
+    color: cadetblue;
+    font-weight: bold;
+    animation: blinker 1s linear infinite;   
+  }
+
 
   .LoggedIn {
     color: lime;
