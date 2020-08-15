@@ -1,16 +1,18 @@
-import { Component } from '@angular/core';
+
+import { Component} from '@angular/core';
 import { ITooltipAngularComp } from 'ag-grid-angular/public-api';
 
 
 @Component({
   // tslint:disable-next-line:component-selector
-  templateUrl: './custom-plan-tooltip.component.html',
+  selector: 'tooltip-component',
+  templateUrl: './custom-time-tooltip.component.html',
   styles: [
     `
       :host {
         position: absolute;
-        width: 450px;
-        height: 300px;
+        width: 280px;
+        height: 100px;
         border: 3px solid darkblue;
         overflow: hidden;
         pointer-events: none;
@@ -26,18 +28,15 @@ import { ITooltipAngularComp } from 'ag-grid-angular/public-api';
   ],
 })
 // tslint:disable-next-line:component-class-suffix
-export class CustomPlanTooltip implements ITooltipAngularComp {
-
+export class CustomTooltip implements ITooltipAngularComp {
+  public params: any;
   public data: any;
-  public row: any;
 
   agInit(params): void {
+    this.params = params;
 
-    this.row = params.api.getDisplayedRowAtIndex(params.rowIndex);
-    this.data = this.row.data.TowPlanList;
-
-    for ( let i  = this.row.data.TowPlanList.length; i < 10; i++){
-      this.row.data.TowPlanList.push({TowingID: '', From: '', To: '', ScheduledTime: ''});
-    }
+    this.data = params.api.getDisplayedRowAtIndex(params.rowIndex).data;
+    this.data.color = this.params.color || 'white';
   }
 }
+

@@ -1,5 +1,6 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, NgModule } from '@angular/core';
 import { ITooltipAngularComp } from 'ag-grid-angular/public-api';
+import { CommonModule } from '@angular/common';
 
 
 @Component({
@@ -10,9 +11,9 @@ import { ITooltipAngularComp } from 'ag-grid-angular/public-api';
       :host {
         position: absolute;
         width: 280px;
-        height: 300px;
+        display: block;
+        overflow: auto;
         border: 3px solid darkblue;
-        overflow: hidden;
         pointer-events: none;
         transition: opacity 1s;
         backgroud-color: black;
@@ -33,7 +34,6 @@ export class CustomStandTooltip implements ITooltipAngularComp {
 
   agInit(params): void {
 
-    debugger;
     this.params = params;
     this.row = this.params.api.getDisplayedRowAtIndex(params.rowIndex);
 
@@ -43,9 +43,13 @@ export class CustomStandTooltip implements ITooltipAngularComp {
     } else {
       this.data = this.row.data.ToStand;
     }
-
-    for ( let i  = this.data.CustomFields.length; i < 8; i++){
-      this.data.CustomFields.push({Name: '', Value: ''});
-    }
   }
 }
+
+// This is a hack to get *ngFor workin with new Ivy compiler
+// See https://indepth.dev/lazy-loading-angular-modules-with-ivy/
+@NgModule({
+  declarations: [CustomStandTooltip],
+  imports: [CommonModule]
+})
+class LazyModule2 { }

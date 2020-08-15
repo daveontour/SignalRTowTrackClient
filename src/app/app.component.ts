@@ -4,14 +4,14 @@ import { Component, OnInit, Inject } from '@angular/core';
 
 import * as moment from 'moment';
 import { HttpClient } from '@angular/common/http';
-import { CustomTooltip } from './custom-tooltip.component';
-import { CustomPlanTooltip } from './custom-plan-tooltip.component';
-import { CustomStandTooltip } from './custom-stand-tooltip.component';
+import { CustomTooltip } from './tooltips/custom-time-tooltip.component';
+import { CustomPlanTooltip } from './tooltips/custom-plan-tooltip.component';
+import { CustomStandTooltip } from './tooltips/custom-stand-tooltip.component';
 import { ChangeDetectorRef } from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
-import { LoginDialog } from './login-dialog.component';
-import { ConfirmationDialog } from './confirmation-dialog.component';
+import { LoginDialogComponent } from './dialogs/login-dialog.component';
+import { ConfirmationDialogComponent } from './dialogs/confirmation-dialog.component';
 
 
 @Component({
@@ -352,7 +352,6 @@ export class AppComponent implements OnInit {
     //   return;
     // }
 
-    debugger;
     if (this.checkAddRow(updatedTow)) {
       updatedTow = this.transformRow(updatedTow);
       const itemsToUpdate = [];
@@ -557,7 +556,7 @@ export class AppComponent implements OnInit {
     document.execCommand('copy');
     document.body.removeChild(dummy);
 
-    const dialogRef = this.dialog.open(ConfirmationDialog, {
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
         message: 'Grid data copied to clipboard',
       },
@@ -567,7 +566,7 @@ export class AppComponent implements OnInit {
   openDialog(): any {
 
     const that = this;
-    const dialogRef = this.dialog.open(LoginDialog, {
+    const dialogRef = this.dialog.open(LoginDialogComponent, {
       data: {
         message: 'Login to access Tow Tracker using your AMS credentials',
         buttonText: {
@@ -581,9 +580,6 @@ export class AppComponent implements OnInit {
     dialogRef.afterClosed().subscribe((data: any) => {
       if (data.confirmed) {
         that.hubService.login(data.id, data.token);
-        const a = document.createElement('a');
-        a.click();
-        a.remove();
       }
     });
   }

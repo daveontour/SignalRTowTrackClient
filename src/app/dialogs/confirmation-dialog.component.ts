@@ -5,7 +5,7 @@ import { NgZone } from '@angular/core';
 @Component({
     templateUrl: 'confirmation-dialog.html',
 })
-export class ConfirmationDialog {
+export class ConfirmationDialogComponent {
     message = 'Login for edit access';
     confirmButtonText = 'Login';
     cancelButtonText = 'Cancel';
@@ -14,7 +14,7 @@ export class ConfirmationDialog {
     constructor(
         private zone: NgZone,
         @Inject(MAT_DIALOG_DATA) private data: any,
-        public dialogRef: MatDialogRef<ConfirmationDialog>) {
+        public dialogRef: MatDialogRef<ConfirmationDialogComponent>) {
         if (data) {
             this.message = data.message || this.message;
             if (data.buttonText) {

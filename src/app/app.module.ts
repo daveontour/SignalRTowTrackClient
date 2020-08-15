@@ -9,25 +9,25 @@ import { AgGridModule } from 'ag-grid-angular';
 import { HttpClientModule } from '@angular/common/http';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
-import { CustomTooltip } from './custom-tooltip.component';
-
 
 import { MatDialogModule} from '@angular/material/dialog';
 import {MatMenuModule} from '@angular/material/menu';
 
-import {ConfirmationDialog} from './confirmation-dialog.component';
-import {LoginDialog} from './login-dialog.component';
+import {ConfirmationDialogComponent} from './dialogs/confirmation-dialog.component';
+import {LoginDialogComponent} from './dialogs/login-dialog.component';
+import { CommonModule } from '@angular/common';
 
 
 
 @NgModule({
   declarations: [
-    AppComponent, CustomTooltip, ConfirmationDialog, LoginDialog
+    AppComponent, ConfirmationDialogComponent, LoginDialogComponent
   ],
   imports: [
    BrowserModule,
+   CommonModule,
    BrowserAnimationsModule,
-   AgGridModule.withComponents([]),
+   AgGridModule.withComponents([ CommonModule]),
    HttpClientModule,
    FormsModule,
    MatDialogModule
@@ -44,6 +44,6 @@ import {LoginDialog} from './login-dialog.component';
     MatMenuModule,
 
   ],
-  entryComponents: [ConfirmationDialog, LoginDialog],
+  entryComponents: [ConfirmationDialogComponent, LoginDialogComponent],
 })
 export class AppModule { }

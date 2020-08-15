@@ -5,7 +5,7 @@ import { NgZone } from '@angular/core';
 @Component({
     templateUrl: 'login-dialog.html',
 })
-export class LoginDialog {
+export class LoginDialogComponent {
     message = 'Login for edit access';
     confirmButtonText = 'Login';
     cancelButtonText = 'Cancel';
@@ -14,7 +14,7 @@ export class LoginDialog {
     constructor(
         private zone: NgZone,
         @Inject(MAT_DIALOG_DATA) private data: any,
-        private dialogRef: MatDialogRef<LoginDialog>) {
+        private dialogRef: MatDialogRef<LoginDialogComponent>) {
         if (data) {
             this.message = data.message || this.message;
             if (data.buttonText) {

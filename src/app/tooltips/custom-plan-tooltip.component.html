@@ -1,0 +1,27 @@
+<div class="custom-tooltip"
+  style="background-color: darkviolet; border-width:10px; border-color: blue; padding: 3px;">
+  <b>Tow Plan:</b>&nbsp;{{row.data.Flights}}
+  <br/><br/>
+  <table>
+    <tr>
+      <td style="width:100px"><b>Tow ID</b></td>
+      <td style="width:60px"><b>From</b></td>
+      <td style="width:60px"><b>To</b></td>
+      <td style="width:120px"><b>Time</b></td>
+      <td style="width:160px"><b>Status</b></td>
+    </tr>
+    <tr *ngFor="let item of data; index as i;">
+      <td>{{item.TowingID}}</td>
+      <td>{{item.From}}</td>
+      <td>{{item.To}}</td>
+      <td>{{item.ScheduledTime}}</td>
+      <td>{{item.Status}}</td>
+    </tr>
+  </table>
+  <br/>
+
+  <table>
+    <tr><td><b>Arrival: </b></td><td>{{row.data.Arrival}}</td></tr>
+    <tr><td><b>Departure: </b></td><td> {{row.data.Departure}}</td></tr>
+  </table>
+</div>
