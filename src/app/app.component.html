@@ -30,7 +30,7 @@
         <option value="180">+3 hour</option>
 
       </select>
-      <label>To:</label>
+      <label style="margin-left: 10px;">To:</label>
       <select name="to" [(ngModel)]='offsetTo' style="font-size: 12px;">
         <option value="-180">-3 hours</option>
         <option value="-120">-2 hours</option>
@@ -43,7 +43,7 @@
         <option value="300">+5 hour</option>
         <option value="360">+6 hour</option>
       </select>
-      <label style="margin-left: 5px;">Show Completed Tows:</label>
+      <label style="margin-left: 15px;">Show Completed Tows:</label>
       <input type="checkbox" [(ngModel)]='showCompleted' (change)='loadData()'>
       <button (click)="setCurrentRange()" style="font-size:12px;">Load</button>
 
@@ -52,9 +52,9 @@
       style="margin-left:20px;height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px">
       <label>Tows for Flights Between:</label>
       <input class="gridinput" [(ngModel)]="rangeDateFrom" style="font-size:12px;width:120px" type="date">
-      <label>and</label>
+      <label style="margin-left: 10px; margin-right: 10px;">and</label>
       <input class="gridinput" [(ngModel)]="rangeDateTo" style="font-size:12px;width:120px" type="date">
-      <select class="gridinput" name="towTypes" id="towTypes" style="width:100px; font-size: 12px;">
+      <select class="gridinput" name="towTypes" id="towTypes" style="width:100px; font-size: 12px;margin-left:15px">
         <option value="Incomplete" selected="selected">Incomplete</option>
         <option value="Complete">Complete</option>
         <option value="All">All</option>
@@ -67,9 +67,9 @@
     style="margin-left:20px;height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px">
     <label>Tows Between:</label>
     <input class="gridinput" [(ngModel)]="rangeDateFrom" style="font-size:12px;width:120px" type="date">
-    <label>and</label>
+    <label style="margin-left: 10px; margin-right: 10px;">and</label>
     <input class="gridinput" [(ngModel)]="rangeDateTo" style="font-size:12px;width:120px" type="date">
-    <select class="gridinput" name="towTypes" id="towTypes" style="font-size:12px;width:100px">
+    <select class="gridinput" name="towTypes" id="towTypes" style="font-size:12px;width:100px;margin-left:15px">
       <option value="Incomplete" selected="selected">Incomplete</option>
       <option value="Complete">Complete</option>
       <option value="All">All</option>
