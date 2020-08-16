@@ -27,6 +27,7 @@ export class SignalRService {
   enableReadyCallBack = new EventEmitter<boolean>();
   loggedIn = new EventEmitter<boolean>();
   loggedOut = new EventEmitter<boolean>();
+  forceLogoout = new EventEmitter<any>();
 
   private connectionIsEstablished = false;
   private hubConnection: HubConnection;
@@ -59,6 +60,10 @@ export class SignalRService {
 
     const that = this;
 
+    this.proxy.on('ForceLogout', () => {
+      this.forceLogoout.emit();
+      this.zone.run(() => { });
+    });
     this.proxy.on('Add', (data: any) => {
       if (that.disableAccess) {
         return;

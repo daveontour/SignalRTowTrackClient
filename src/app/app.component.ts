@@ -1,6 +1,6 @@
 import { SignalRService } from './services/signalr.service';
 import { GlobalService } from './services/global.service';
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 import * as moment from 'moment';
 import { HttpClient } from '@angular/common/http';
@@ -119,8 +119,7 @@ export class AppComponent implements OnInit {
     public hubService: SignalRService,
     private ref: ChangeDetectorRef,
     private dialog: MatDialog,
-    // private snackBar: MatSnackBar
-
+ 
   ) {
 
     this.getRowNodeId = (data: any) => {
@@ -284,6 +283,9 @@ export class AppComponent implements OnInit {
       that.openDialog();
       that.rowData = [];
     });
+    this.hubService.forceLogoout.subscribe(() => {
+      that.logout();
+    });
 
 
     this.hubService.enableReadyCallBack.subscribe((enable: boolean[]) => {
@@ -355,8 +357,22 @@ export class AppComponent implements OnInit {
     if (this.checkAddRow(updatedTow)) {
       updatedTow = this.transformRow(updatedTow);
       const itemsToUpdate = [];
-      itemsToUpdate.push(updatedTow);
-      this.gridApi.updateRowData({ update: itemsToUpdate });
+      const itemsToAdd = [];
+
+      // Check if it is already there, if so, update it, if not add it.
+      // This is required because as tows fall into the window of interest, they are "updated"
+      for (let i = 0; i < this.numRows; i++) {
+        const rowData = this.gridApi.getDisplayedRowAtIndex(i).data;
+        if (rowData.TowingID === updatedTow.TowingID){
+          itemsToUpdate.push(updatedTow);
+          break;
+        }
+      }
+      if (itemsToUpdate.length === 0){
+        itemsToAdd.push(updatedTow);
+      }
+
+      this.gridApi.updateRowData({ update: itemsToUpdate,  add: itemsToAdd });
       this.numRows = this.gridApi.getDisplayedRowCount();
     } else {
       const itemsToRemove = [updatedTow];
@@ -527,6 +543,23 @@ export class AppComponent implements OnInit {
     } else {
       return 'hide';
     }
+  }
+
+  saveToPDF(): void {
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        message: 'Not yet enabled',
+      },
+      disableClose: true
+    });
+  }
+  about(): void {
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        message: 'AMS Tow Tracker - SITA MEIA Integration Team',
+      },
+      disableClose: true
+    });
   }
   copyToClipboard(): void {
 
@@ -764,7 +797,4 @@ function getTowReadyEditor(): any {
   };
   return TowReadyCellEditor;
 }
-
-
-
 

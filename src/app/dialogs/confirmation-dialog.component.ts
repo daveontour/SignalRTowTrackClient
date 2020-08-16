@@ -7,7 +7,7 @@ import { NgZone } from '@angular/core';
 })
 export class ConfirmationDialogComponent {
     message = 'Login for edit access';
-    confirmButtonText = 'Login';
+    confirmButtonText = 'OK';
     cancelButtonText = 'Cancel';
     id: string;
     token: string;
