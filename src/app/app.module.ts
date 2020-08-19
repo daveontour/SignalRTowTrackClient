@@ -75,7 +75,8 @@ import {OverlayModule} from '@angular/cdk/overlay';
    HttpClientModule,
    FormsModule,
    MatDialogModule,
-   MatMenuModule
+   MatMenuModule,
+   MatIconModule
   ],
   providers: [
     GlobalService,

@@ -417,7 +417,6 @@ export class AppComponent implements OnInit {
 
     if (row.ArrivalFlightDescriptor !== null) {
       row.Arrival = row.ArrivalFlightDescriptor.replace('@', ' ');
-      row.Arrival = row.Arrival.replace('T', ' ');
       row.Arrival = row.Arrival.substring(0, row.Arrival.length - 1);
 
     } else {
@@ -428,9 +427,7 @@ export class AppComponent implements OnInit {
 
     if (row.DepartureFlightDescriptor !== null) {
       row.Departure = row.DepartureFlightDescriptor.replace('@', ' ');
-      row.Departure = row.Departure.replace('T', ' ');
       row.Departure = row.Departure.substring(0, row.Departure.length - 1);
-
     } else {
       row.Departure = '-';
       row.DepartureAirlineCode = '';

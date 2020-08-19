@@ -79,46 +79,19 @@
   </div>
 
   </div>
-  <div
-    style="margin-left:auto; margin-right:10px; height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px;">
-
-
-    <!-- <button (click)="sortDefault()" style='font-size: 12px; width:100px'>Default Sort</button>
-    <button id="copyBtn" (click)="copyToClipboard()" style='font-size: 12px; width:50px'>Copy</button>
-
-    <button id="loginBtn" (click)="openDialog()"
-      style='margin-left: 10px;font-size: 12px; width:50px; display: none'>Login</button>
-    <button id="logoutBtn" (click)="logout()" style='font-size: 12px; width:50px; display: none'>Logout</button> -->
-    <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu" style="height:30px; margin-right: 20px;font-size:12px; width:60px">
-      Menu
+    <button mat-icon-button [matMenuTriggerFor]="menu"  style="margin-left:auto; margin-right: 20px; background-color: #181D1F;">
+      <mat-icon style="color:whitesmoke; background-color: #181D1F;">more_vert</mat-icon>
     </button>
-    <mat-menu #menu="matMenu">
-      <!-- <button mat-menu-item>
-        <mat-icon>dialpad</mat-icon>
-        <span>Redial</span>
-      </button>
-      <button mat-menu-item disabled>
-        <mat-icon>voicemail</mat-icon>
-        <span>Check voice mail</span>
-      </button>
-      <button mat-menu-item>
-        <mat-icon>notifications_off</mat-icon>
-        <span>Disable alerts</span>
-      </button> -->
-
-      <button mat-menu-item (click)="sortDefault()" style='font-size: 12px; width:100px'>Default Sort</button>
-      <button mat-menu-item id="copyBtn" (click)="copyToClipboard()" style='font-size: 12px; width:100px'>Copy</button>
-      <button mat-menu-item  disabled id="pdfBtn" (click)="saveToPDF()" style='font-size: 12px; width:100px'>Save to PDF</button>
+    <mat-menu #menu="matMenu" style="background-color: yellow;">
+      <button mat-menu-item (click)="sortDefault()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>Default Sort</button>
+      <button mat-menu-item id="copyBtn" (click)="copyToClipboard()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>Copy</button>
+  <!--    <button mat-menu-item  disabled id="pdfBtn" (click)="saveToPDF()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>Save to PDF</button> -->
       <hr />
-      <button mat-menu-item id="loginBtn" (click)="openDialog()" style='font-size: 12px; width:100px;'>Login</button>
-      <button mat-menu-item id="logoutBtn" (click)="logout()" style='font-size: 12px; width:100px;'>Logout</button>
+      <button mat-menu-item id="loginBtn" (click)="openDialog()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>Login</button>
+      <button mat-menu-item id="logoutBtn" (click)="logout()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>Logout</button>
       <hr/>
-      <button mat-menu-item id="aboutBtn" (click)="about()" style='font-size: 12px; width:100px;'>About</button>
-
+      <button mat-menu-item id="aboutBtn" (click)="about()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>About</button>
     </mat-menu>
-
-
-  </div>
 </div>
 
 
