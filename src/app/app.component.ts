@@ -56,6 +56,8 @@ export class AppComponent implements OnInit {
   public enableReady = false;
   public overlayLoadingTemplate = '<span class="ag-overlay-loading-center">Please log in to load the tows</span>';
   public columnDefs = [
+    { headerName: 'A/C Rego', field: 'AircraftRegistration', tooltipComponent: 'customPlanTooltip', tooltipField: 'TowingID' },
+    { headerName: 'A/C Type', field: 'AircraftType', tooltipComponent: 'customPlanTooltip', tooltipField: 'TowingID' },
     { headerName: 'Tow ID', field: 'TowingID', tooltipComponent: 'customPlanTooltip', tooltipField: 'TowingID' },
     {
       headerName: 'Status', field: 'Status', sortable: true, flex: 3, comparator: this.statusComparator, valueGetter: this.statusGetter,
@@ -97,8 +99,6 @@ export class AppComponent implements OnInit {
     { headerName: 'Act. End', field: 'ActualEnd', colId: 'ActualEndEdit', tooltipComponent: 'customTooltip', tooltipField: 'ScheduledStart', valueFormatter: this.timeFormatter, editable: true, cellEditor: 'yearCellEditor', hide: true },
     // tslint:disable-next-line:max-line-length
     { headerName: 'Act. End', field: 'ActualEnd', colId: 'ActualEnd', tooltipComponent: 'customTooltip', tooltipField: 'ScheduledStart', valueFormatter: this.timeFormatter },
-    { headerName: 'A/C Type', field: 'AircraftType' },
-    { headerName: 'A/C Rego', field: 'AircraftRegistration' },
     { headerName: 'Flights', field: 'Flights', tooltipField: 'TowingID', flex: 3, tooltipComponent: 'customPlanTooltip', }
   ];
   public defaultColDef = {
@@ -413,7 +413,6 @@ export class AppComponent implements OnInit {
     this.hubService.getTows(this.offsetFrom, this.offsetTo);
   }
   transformRow(row: any): any {
-
 
     if (row.ArrivalFlightDescriptor !== null) {
       row.Arrival = row.ArrivalFlightDescriptor.replace('@', ' ');
