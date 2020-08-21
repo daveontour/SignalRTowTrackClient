@@ -541,13 +541,34 @@ export class AppComponent implements OnInit {
     }
   }
 
-  saveToPDF(): void {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        message: 'Not yet enabled',
-      },
-      disableClose: true
-    });
+  saveToCSV(): void {
+
+    let cb = 'TowingId,Status,ReadyState,FromStand,ToStand,ScheduledStart,ScheduledEnd,ActualStart,ActualEnd,AircraftRegistration,AircraftType,Arrival,Departure\n';
+
+    for (let i = 0; i < this.numRows; i++) {
+      const rowData = this.gridApi.getDisplayedRowAtIndex(i).data;
+      cb += rowData.TowingID + ',';
+      cb += rowData.Status + ',';
+      cb += rowData.Ready + ',';
+      cb += rowData.From + ',';
+      cb += rowData.To + ',';
+      cb += rowData.ScheduledStart + ',';
+      cb += rowData.ScheduledEnd + ',';
+      cb += rowData.ActualStart + ',';
+      cb += rowData.ActualEnd + ',';
+      cb += rowData.AircraftRegistration + ',';
+      cb += rowData.AircraftType + ',';
+      cb += rowData.Arrival + ',';
+      cb += rowData.Departure + ',';
+
+    }
+
+
+    const file = new File([cb], 'Tows.csv');
+    const link = document.createElement('a');
+    link.download = file.name;
+    link.href = URL.createObjectURL(file);
+    link.click();
   }
   about(): void {
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
@@ -711,16 +732,16 @@ function getYearCellEditor(): any {
 
 function getTowReadyEditor(): any {
   function TowReadyCellEditor(): any { }
-  TowReadyCellEditor.prototype.getGui = function (): any {
+  TowReadyCellEditor.prototype.getGui = function(): any {
     return this.eGui;
   };
-  TowReadyCellEditor.prototype.getValue = function (): any {
+  TowReadyCellEditor.prototype.getValue = function(): any {
     return this.value;
   };
-  TowReadyCellEditor.prototype.isPopup = function (): any {
+  TowReadyCellEditor.prototype.isPopup = function(): any {
     return true;
   };
-  TowReadyCellEditor.prototype.init = function (params: any): any {
+  TowReadyCellEditor.prototype.init = function(params: any): any {
 
     this.value = params.value;
     this.data = params.data;
@@ -772,19 +793,19 @@ function getTowReadyEditor(): any {
 
     tempElement
       .querySelector('#btOK')
-      .addEventListener('click', function (): any {
+      .addEventListener('click', function(): any {
         that.value = $('#ready').val();
         params.stopEditing();
       });
     tempElement
       .querySelector('#btClear')
-      .addEventListener('click', function (): any {
+      .addEventListener('click', function(): any {
         that.value = null;
         params.stopEditing();
       });
     tempElement
       .querySelector('#btEsc')
-      .addEventListener('click', function (): any {
+      .addEventListener('click', function(): any {
         params.stopEditing();
       });
 

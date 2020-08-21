@@ -85,7 +85,7 @@
     <mat-menu #menu="matMenu" style="background-color: yellow;">
       <button mat-menu-item (click)="sortDefault()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>Default Sort</button>
       <button mat-menu-item id="copyBtn" (click)="copyToClipboard()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>Copy</button>
-  <!--    <button mat-menu-item  disabled id="pdfBtn" (click)="saveToPDF()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>Save to PDF</button> -->
+      <button mat-menu-item id="csvBtn" (click)="saveToCSV()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>Save to CSV</button>
       <hr />
       <button mat-menu-item id="loginBtn" (click)="openDialog()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>Login</button>
       <button mat-menu-item id="logoutBtn" (click)="logout()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>Logout</button>
