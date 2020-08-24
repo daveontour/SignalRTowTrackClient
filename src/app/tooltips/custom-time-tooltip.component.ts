@@ -1,6 +1,8 @@
 
 import { Component} from '@angular/core';
 import { ITooltipAngularComp } from 'ag-grid-angular/public-api';
+import { data } from 'jquery';
+import * as moment from 'moment';
 
 
 @Component({
@@ -11,7 +13,7 @@ import { ITooltipAngularComp } from 'ag-grid-angular/public-api';
     `
       :host {
         position: absolute;
-        width: 280px;
+        width: 420px;
         height: 100px;
         border: 3px solid darkblue;
         overflow: hidden;
@@ -31,12 +33,30 @@ import { ITooltipAngularComp } from 'ag-grid-angular/public-api';
 export class CustomTooltip implements ITooltipAngularComp {
   public params: any;
   public data: any;
+  public ScheduledStartUTC: any;
+  public ScheduledEndUTC: any;
+  public ActualStartUTC: any;
+  public ActualEndUTC: any;
 
   agInit(params): void {
     this.params = params;
 
     this.data = params.api.getDisplayedRowAtIndex(params.rowIndex).data;
     this.data.color = this.params.color || 'white';
+
+    if (this.data.ScheduledStart !== '-'){
+      this.ScheduledStartUTC = moment(this.data.ScheduledStart).utc().format('YYYY-MM-DDTHH:mm') + 'Z';
+    }
+    if (this.data.ScheduledEnd !== '-'){
+      this.ScheduledEndUTC = moment(this.data.ScheduledEnd).utc().format('YYYY-MM-DDTHH:mm') + 'Z';
+    }
+
+    if (this.data.ActualStart !== '-'){
+      this.ActualStartUTC = moment(this.data.ActualStart).utc().format('YYYY-MM-DDTHH:mm') + 'Z';
+    }
+    if (this.data.ActualEnd !== '-'){
+      this.ActualEndUTC = moment(this.data.ActualEnd).utc().format('YYYY-MM-DDTHH:mm') + 'Z';
+    }
   }
 }
 

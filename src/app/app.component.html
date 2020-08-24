@@ -38,7 +38,7 @@
         <option value="360">+6 hour</option>
       </select>
       <label style="margin-left: 15px;">Show Completed Tows:</label>
-      <input type="checkbox" [(ngModel)]='showCompleted' (change)='loadData()'>
+      <input type="checkbox" [(ngModel)]='showCompleted' (change)="setCurrentRange()">
       <button (click)="setCurrentRange()" style="font-size:12px;">Load</button>
 
     </div>

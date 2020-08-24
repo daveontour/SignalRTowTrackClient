@@ -405,12 +405,23 @@ export class AppComponent implements OnInit {
       this.gridApi.updateRowData({ update: itemsToUpdate, add: itemsToAdd });
       this.numRows = this.gridApi.getDisplayedRowCount();
     } else {
-      const itemsToRemove = [updatedTow];
-      this.gridApi.updateRowData({ remove: itemsToRemove });
+
+      for (let i = 0; i < this.numRows; i++) {
+        const rowData = this.gridApi.getDisplayedRowAtIndex(i).data;
+        if (rowData.TowingID === updatedTow.TowingID) {
+          const itemsToRemove = [updatedTow];
+          this.gridApi.updateRowData({ remove: itemsToRemove });
+          break;
+        }
+      }
       this.numRows = this.gridApi.getDisplayedRowCount();
     }
 
-    this.lastUpdate = moment().format('HH:mm:ss');
+    if (this.globals.timeZone === 'UTC') {
+      this.lastUpdate = moment().utc().format('HH:mm:ss') + 'Z';
+    } else {
+      this.lastUpdate = moment().format('HH:mm:ss');
+    }
 
   }
   addGridRow(addTow: any): void {
@@ -433,8 +444,12 @@ export class AppComponent implements OnInit {
     }
     const itemsToRemove = [removeTow];
     this.gridApi.updateRowData({ remove: itemsToRemove });
-    this.lastUpdate = moment().format('HH:mm:ss');
     this.numRows = this.gridApi.getDisplayedRowCount();
+    if (this.globals.timeZone === 'UTC') {
+      this.lastUpdate = moment().utc().format('HH:mm:ss') + 'Z';
+    } else {
+      this.lastUpdate = moment().format('HH:mm:ss');
+    }
   }
 
   transformRow(row: any): any {
@@ -665,13 +680,13 @@ function getYearCellEditor(): any {
     }
 
     if (this.value !== '-' && this.value != null) {
-        if (this.data.PageDateFormat === 'Local') {
-          dt = moment(this.value).format('YYYY-MM-DD');
-          tt = moment(this.value).format('HH:mm');
-        } else {
-          dt = moment(this.value).utc().format('YYYY-MM-DD');
-          tt = moment(this.value).utc().format('HH:mm');
-        }
+      if (this.data.PageDateFormat === 'Local') {
+        dt = moment(this.value).format('YYYY-MM-DD');
+        tt = moment(this.value).format('HH:mm');
+      } else {
+        dt = moment(this.value).utc().format('YYYY-MM-DD');
+        tt = moment(this.value).utc().format('HH:mm');
+      }
     }
 
     tempElement.innerHTML =
@@ -688,11 +703,10 @@ function getYearCellEditor(): any {
     tempElement
       .querySelector('#btOK')
       .addEventListener('click', () => {
-        if (that.timeFormat === 'Local') {
+        if (that.data.PageDateFormat === 'Local') {
           that.value = moment($('#editorDate').val() + 'T' + $('#editorTime').val()).format('YYYY-MM-DDTHH:mm:ss');
         } else {
-          that.value = moment($('#editorDate').val() + 'T' + $('#editorTime').val()).format('YYYY-MM-DDTHH:mm:ssZ');
-
+          that.value = moment($('#editorDate').val() + 'T' + $('#editorTime').val() + 'Z').format('YYYY-MM-DDTHH:mm:ssZ');
         }
         if (that.field === 'ActualEnd') {
           if (that.data.ActualStart === '-') {
@@ -749,13 +763,13 @@ function getYearCellEditor(): any {
 
 function getTowReadyEditor(): any {
   function TowReadyCellEditor(): any { }
-  TowReadyCellEditor.prototype.getGui = () => {
+  TowReadyCellEditor.prototype.getGui = function (): any {
     return this.eGui;
   };
-  TowReadyCellEditor.prototype.getValue = () => {
+  TowReadyCellEditor.prototype.getValue = function (): any {
     return this.value;
   };
-  TowReadyCellEditor.prototype.isPopup = () => {
+  TowReadyCellEditor.prototype.isPopup = function (): any {
     return true;
   };
   TowReadyCellEditor.prototype.init = function (params: any): any {
