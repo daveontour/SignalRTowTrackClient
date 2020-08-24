@@ -8,6 +8,7 @@
       <td style="width:60px"><b>From</b></td>
       <td style="width:60px"><b>To</b></td>
       <td style="width:120px"><b>Time</b></td>
+      <td style="width:120px"><b>Time (UTC)</b></td>
       <td style="width:160px"><b>Status</b></td>
     </tr>
     <tr *ngFor="let item of data; index as i;">
@@ -15,13 +16,14 @@
       <td>{{item.From}}</td>
       <td>{{item.To}}</td>
       <td>{{item.ScheduledTime}}</td>
+      <td>{{item.ScheduledTimeUTC}}</td>
       <td>{{item.Status}}</td>
     </tr>
   </table>
   <br/>
 
   <table>
-    <tr><td><b>Arrival: </b></td><td>{{row.data.Arrival}}</td></tr>
-    <tr><td><b>Departure: </b></td><td> {{row.data.Departure}}</td></tr>
+    <tr><td><b>Arrival: </b></td><td>{{row.data.Arrival}}  {{arrUTC}}</td></tr>
+    <tr><td><b>Departure: </b></td><td> {{row.data.Departure}}  {{depUTC}}</td></tr>
   </table>
 </div>

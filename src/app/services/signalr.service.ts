@@ -24,12 +24,12 @@ export class SignalRService {
   updateReceived = new EventEmitter<any>();
   towsReceived = new EventEmitter<any>();
   allowActual = new EventEmitter<boolean>();
-  enableReadyCallBack = new EventEmitter<boolean>();
+  configCallBack = new EventEmitter<boolean[]>();
   loggedIn = new EventEmitter<boolean>();
   loggedOut = new EventEmitter<boolean>();
   forceLogoout = new EventEmitter<any>();
 
-  private connectionIsEstablished = false;
+ // private connectionIsEstablished = false;
   private hubConnection: HubConnection;
   private proxy;
   public disableAccess = true;
@@ -100,13 +100,11 @@ export class SignalRService {
     this.hubConnection
       .start()
       .then(() => {
-        this.connectionIsEstablished = true;
-        console.log('Hub connection started');
         this.connectionEstablished.emit(true);
         this.zone.run(() => { });
       })
-      .catch(err => {
-        console.log('Error while establishing connection, retrying...');
+      // tslint:disable-next-line:variable-name
+      .catch( (_err: any) => {
         setTimeout(() => { that.startConnection(); }, 5000);
         this.zone.run(() => { });
       });
@@ -125,15 +123,6 @@ export class SignalRService {
     });
   }
 
-  public getTowsForFlightRange(rangeDateFrom: any, rangeDateTo: any, type: any): any {
-    const that = this;
-    this.proxy.invoke('getTowsForFlightRange', rangeDateFrom, rangeDateTo, type).done((tows) => {
-      that.towsReceived.emit(tows);
-      that.zone.run(() => { });
-    }).fail((error) => {
-      console.log('Invocation of getTowsForFlightRange failed. Error: ' + error);
-    });
-  }
   public getTowsForDateRange(rangeDateFrom: any, rangeDateTo: any, type: any): any {
     const that = this;
 
@@ -231,10 +220,10 @@ export class SignalRService {
 
   public checkEnableReady(): any {
     const that = this;
-    this.proxy.invoke('EnableReady').done((enable: boolean) => {
-      that.enableReadyCallBack.emit(enable);
+    this.proxy.invoke('EnableReady').done((config: boolean[]) => {
+      that.configCallBack.emit(config);
     }).fail((error) => {
-      that.enableReadyCallBack.emit(false);
+      that.configCallBack.emit([false, false, false]);
       console.log('Invocation of Enable Ready failed. Error: ' + error);
     });
   }

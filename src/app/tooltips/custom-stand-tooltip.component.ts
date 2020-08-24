@@ -43,6 +43,13 @@ export class CustomStandTooltip implements ITooltipAngularComp {
     } else {
       this.data = this.row.data.ToStand;
     }
+
+    if (this.data.Name === null){
+      this.data.Name = '-';
+    }
+    if (this.data.Area === null){
+      this.data.Name = '-';
+    }
   }
 }
 

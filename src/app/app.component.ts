@@ -12,6 +12,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { LoginDialogComponent } from './dialogs/login-dialog.component';
 import { ConfirmationDialogComponent } from './dialogs/confirmation-dialog.component';
+import { data } from 'jquery';
 
 
 @Component({
@@ -26,23 +27,23 @@ export class AppComponent implements OnInit {
   public offsetFrom = -300;
   public offsetTo = 240;
 
+  public timeFormat = 'Local';
+
   public rangeFrom: number;
   public rangeTo: number;
   public rangeDate: any;
 
+  public disableLogin = true;
+  public disableLogout = true;
+
   public rangeDateFrom: any;
   public rangeDateTo: any;
 
-  public editorDate: any;
-  public editorTime: any;
-
-  public showOnBlocks = true;
   public showDateRange = false;
-  public enableDisplaySwitcher = false;
   public showCompleted = false;
   public showAll = true;
   public tooltipShowDelay = 0;
-  public frameworkComponents;
+  public frameworkComponents: any;
 
   public selectMode = 'Monitor';
   public loadingStatus = '';
@@ -52,7 +53,7 @@ export class AppComponent implements OnInit {
   public gridColumnApi: any;
   public numRows: any;
   public status = 'Connecting';
-  public components;
+  public components: any;
   public enableReady = false;
   public overlayLoadingTemplate = '<span class="ag-overlay-loading-center">Please log in to load the tows</span>';
   public columnDefs = [
@@ -119,7 +120,7 @@ export class AppComponent implements OnInit {
     public hubService: SignalRService,
     private ref: ChangeDetectorRef,
     private dialog: MatDialog,
- 
+
   ) {
 
     this.getRowNodeId = (data: any) => {
@@ -135,7 +136,13 @@ export class AppComponent implements OnInit {
     this.components = { yearCellEditor: getYearCellEditor(), readyCellEditor: getTowReadyEditor() };
   }
 
+  ngOnInit(): void {
+    this.subscribeToEvents();
+  }
+
+  // Comparator for the status field so they can be ordered appropraitely
   statusComparator(status1: string, status2: string): any {
+
     const priMap = new Map([
       ['Scheduled', 50],
       ['Not Started', 1],
@@ -194,7 +201,6 @@ export class AppComponent implements OnInit {
       ['COMPLETED_DQM_ISSUES', 'Completed (DQM Issue)'],
       ['STARTED_RUNNING_OVERTIME', 'Started (Overtime)'],
     ]);
-
     if (descMap.has(params.data.Status)) {
       return descMap.get(params.data.Status);
     } else {
@@ -209,7 +215,18 @@ export class AppComponent implements OnInit {
       return '-';
     }
     const m = moment(params.value);
-    return m.format('HH:mm');
+
+
+    if (params.data.PageDateFormat === 'UTC') {
+      return m.utc().format('HH:mm') + 'Z';
+    } else {
+      return m.format('HH:mm');
+    }
+  }
+
+  timeFormatChange(value: string): void {
+    this.globals.timeZone = value;
+    this.refresh();
   }
   sortDefault(): any {
     const sort = [
@@ -233,9 +250,9 @@ export class AppComponent implements OnInit {
 
     this.hubService.logout();
   }
-  ngOnInit(): void {
-    this.subscribeToEvents();
-  }
+
+
+  // What to do with all the ecents coming from the host
   subscribeToEvents(): void {
     const that = this;
     this.hubService.deleteReceived.subscribe((message: string) => {
@@ -259,6 +276,7 @@ export class AppComponent implements OnInit {
     });
 
     this.hubService.allowActual.subscribe((allow: boolean) => {
+
       that.gridColumnApi.setColumnsVisible(['ActualEnd'], !allow);
       that.gridColumnApi.setColumnsVisible(['ActualEndEdit'], allow);
       that.gridColumnApi.setColumnsVisible(['ActualStart'], !allow);
@@ -274,7 +292,11 @@ export class AppComponent implements OnInit {
     this.hubService.loggedIn.subscribe((allow: boolean) => {
       if (allow) {
         that.hubService.getTows(that.offsetFrom, that.offsetTo);
+        that.disableLogout = false;
+        that.disableLogin = true;
       } else {
+        that.disableLogout = true;
+        that.disableLogin = false;
         that.openDialog();
       }
     });
@@ -282,13 +304,16 @@ export class AppComponent implements OnInit {
     this.hubService.loggedOut.subscribe((allow: boolean) => {
       that.openDialog();
       that.rowData = [];
+      that.disableLogout = true;
+      that.disableLogin = false;
     });
     this.hubService.forceLogoout.subscribe(() => {
       that.logout();
     });
 
 
-    this.hubService.enableReadyCallBack.subscribe((enable: boolean[]) => {
+    this.hubService.configCallBack.subscribe((enable: boolean[]) => {
+
       that.enableReady = enable[0];
       that.gridColumnApi.setColumnsVisible(['Ready'], enable[0]);
       that.gridColumnApi.setColumnsVisible(['ReadyEdit'], false);
@@ -297,13 +322,12 @@ export class AppComponent implements OnInit {
       if (enable[1]) {
         $('#loginBtn').show(0);
         $('#logoutBtn').show(0);
+        that.openDialog();
       }
       // Show the range selector
       if (enable[2]) {
         that.showDateRange = true;
       }
-
-      that.openDialog();
     });
   }
   onGridReady(params): void {
@@ -341,6 +365,12 @@ export class AppComponent implements OnInit {
 
     this.lastUpdate = moment().format('HH:mm:ss');
 
+    if (this.globals.timeZone === 'UTC') {
+      this.lastUpdate = moment().utc().format('HH:mm:ss') + 'Z';
+    } else {
+      this.lastUpdate = moment().format('HH:mm:ss');
+    }
+
     this.rowData = rowsToAdd;
     this.numRows = rowsToAdd.length;
     this.ref.markForCheck();
@@ -363,16 +393,16 @@ export class AppComponent implements OnInit {
       // This is required because as tows fall into the window of interest, they are "updated"
       for (let i = 0; i < this.numRows; i++) {
         const rowData = this.gridApi.getDisplayedRowAtIndex(i).data;
-        if (rowData.TowingID === updatedTow.TowingID){
+        if (rowData.TowingID === updatedTow.TowingID) {
           itemsToUpdate.push(updatedTow);
           break;
         }
       }
-      if (itemsToUpdate.length === 0){
+      if (itemsToUpdate.length === 0) {
         itemsToAdd.push(updatedTow);
       }
 
-      this.gridApi.updateRowData({ update: itemsToUpdate,  add: itemsToAdd });
+      this.gridApi.updateRowData({ update: itemsToUpdate, add: itemsToAdd });
       this.numRows = this.gridApi.getDisplayedRowCount();
     } else {
       const itemsToRemove = [updatedTow];
@@ -406,12 +436,7 @@ export class AppComponent implements OnInit {
     this.lastUpdate = moment().format('HH:mm:ss');
     this.numRows = this.gridApi.getDisplayedRowCount();
   }
-  refresh(): any {
-    this.loadData();
-  }
-  loadData(): any {
-    this.hubService.getTows(this.offsetFrom, this.offsetTo);
-  }
+
   transformRow(row: any): any {
 
     if (row.ArrivalFlightDescriptor !== null) {
@@ -453,6 +478,8 @@ export class AppComponent implements OnInit {
       row.TowPlan = row.From + '->' + row.To;
     }
 
+    row.PageDateFormat = this.globals.timeZone;
+
     return row;
   }
   checkAddRow(updatedTow: any): boolean {
@@ -462,7 +489,7 @@ export class AppComponent implements OnInit {
     if (diff < this.globals.offsetFrom || diff > this.globals.offsetTo) {
       return false;
     }
-    if (this.selectMode !== 'Monitor'){
+    if (this.selectMode !== 'Monitor') {
       return true;
     }
 
@@ -477,15 +504,7 @@ export class AppComponent implements OnInit {
     }
     return true;
   }
-  setCurrentRange(): any {
-    this.loadingStatus = 'Loading Data';
-    this.globals.rangeMode = 'offset';
-    this.displayMode = 'Monitor';
-    this.globals.offsetFrom = this.offsetFrom;
-    this.globals.offsetTo = this.offsetTo;
-    this.globals.zeroTime = moment().add(this.offsetFrom, 'minutes');
-    this.loadData();
-  }
+
 
   modeSelectChange(): any {
     this.rowData = [];
@@ -499,87 +518,69 @@ export class AppComponent implements OnInit {
       this.displayMode = 'Review';
     }
   }
-  setSelectedFlightRange(): any {
 
-    const ms = moment(this.rangeDateFrom, 'YYYY-MM-DD');
-    const me = moment(this.rangeDateTo, 'YYYY-MM-DD');
+  refresh(): any {
 
-    this.globals.offsetFrom = ms.diff(moment(), 'm');
-    this.globals.offsetTo = me.diff(moment(), 'm');
+    if (this.globals.rangeMode === 'offset') {
+      this.setCurrentRange();
+    } else {
+      this.setSelectedDateRange();
+    }
 
+  }
+  setCurrentRange(): any {
     this.loadingStatus = 'Loading Data';
-    this.globals.rangeMode = 'range';
-    this.displayMode = 'Review';
-    this.hubService.getTowsForFlightRange(this.rangeDateFrom, this.rangeDateTo, $('#towTypes').val());
+    this.globals.rangeMode = 'offset';
+    this.displayMode = 'Monitor';
+
+    this.globals.offsetFrom = this.offsetFrom;
+    this.globals.offsetTo = this.offsetTo;
+    this.hubService.getTows(this.offsetFrom, this.offsetTo);
   }
   setSelectedDateRange(): any {
 
+    this.loadingStatus = 'Loading Data';
+    this.globals.rangeMode = 'range';
+    this.displayMode = 'Review';
+
     const ms = moment(this.rangeDateFrom, 'YYYY-MM-DD');
     const me = moment(this.rangeDateTo, 'YYYY-MM-DD');
 
     this.globals.offsetFrom = ms.diff(moment(), 'm');
     this.globals.offsetTo = me.diff(moment(), 'm');
 
-    this.loadingStatus = 'Loading Data';
-    this.globals.rangeMode = 'range';
-    this.displayMode = 'Review';
-    this.hubService.getTowsForDateRange(this.rangeDateFrom, this.rangeDateTo, $('#towTypes').val());
-  }
 
-  getRangeBulletClass(): any {
-    if (this.globals.rangeMode !== 'offset') {
-      return 'show';
-    } else {
-      return 'hide';
-    }
-  }
-  getOffsetBulletClass(): any {
-    if (this.globals.rangeMode === 'offset') {
-      return 'show';
-    } else {
-      return 'hide';
-    }
+    this.hubService.getTowsForDateRange(this.rangeDateFrom, this.rangeDateTo, $('#towTypes').val());
   }
 
   saveToCSV(): void {
 
-    let cb = 'TowingId,Status,ReadyState,FromStand,ToStand,ScheduledStart,ScheduledEnd,ActualStart,ActualEnd,AircraftRegistration,AircraftType,Arrival,Departure\n';
-
-    for (let i = 0; i < this.numRows; i++) {
-      const rowData = this.gridApi.getDisplayedRowAtIndex(i).data;
-      cb += rowData.TowingID + ',';
-      cb += rowData.Status + ',';
-      cb += rowData.Ready + ',';
-      cb += rowData.From + ',';
-      cb += rowData.To + ',';
-      cb += rowData.ScheduledStart + ',';
-      cb += rowData.ScheduledEnd + ',';
-      cb += rowData.ActualStart + ',';
-      cb += rowData.ActualEnd + ',';
-      cb += rowData.AircraftRegistration + ',';
-      cb += rowData.AircraftType + ',';
-      cb += rowData.Arrival + ',';
-      cb += rowData.Departure + ',';
-
-    }
-
-
+    const cb = this.getCSVData();
     const file = new File([cb], 'Tows.csv');
     const link = document.createElement('a');
     link.download = file.name;
     link.href = URL.createObjectURL(file);
     link.click();
   }
-  about(): void {
+
+  copyToClipboard(): void {
+
+    const dummy = document.createElement('textarea');
+    document.body.appendChild(dummy);
+    dummy.value = this.getCSVData();
+    dummy.select();
+    document.execCommand('copy');
+    document.body.removeChild(dummy);
+
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
-        message: 'AMS Tow Tracker - SITA MEIA Integration Team',
+        message: 'Grid data copied to clipboard',
       },
       disableClose: true
     });
   }
-  copyToClipboard(): void {
 
+  getCSVData(): string {
     let cb = 'TowingId,Status,ReadyState,FromStand,ToStand,ScheduledStart,ScheduledEnd,ActualStart,ActualEnd,AircraftRegistration,AircraftType,Arrival,Departure,TowPlan\n';
 
     for (let i = 0; i < this.numRows; i++) {
@@ -596,23 +597,14 @@ export class AppComponent implements OnInit {
       cb += rowData.AircraftRegistration + ',';
       cb += rowData.AircraftType + ',';
       cb += rowData.Arrival + ',';
-      cb += rowData.Departure + ',';
-      cb += rowData.TowPlan + '\n';
-    }
-    const dummy = document.createElement('textarea');
-    document.body.appendChild(dummy);
-    dummy.value = cb;
-    dummy.select();
-    document.execCommand('copy');
-    document.body.removeChild(dummy);
+      cb += rowData.Departure + '\n';
 
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        message: 'Grid data copied to clipboard',
-      },
-      disableClose: true
-    });
+    }
+
+    return cb;
   }
+
+  // The login dialog
   openDialog(): any {
 
     const that = this;
@@ -631,6 +623,14 @@ export class AppComponent implements OnInit {
       if (data.confirmed) {
         that.hubService.login(data.id, data.token);
       }
+    });
+  }
+  about(): void {
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        message: 'AMS Tow Tracker - SITA MEIA Integration Team',
+      },
+      disableClose: true
     });
   }
 }
@@ -653,12 +653,25 @@ function getYearCellEditor(): any {
     this.field = params.colDef.field;
     const tempElement = document.createElement('div');
 
-    let dt = moment().format('YYYY-MM-DD');
-    let tt = moment().format('HH:mm');
+    let dt;
+    let tt;
+
+    if (this.data.PageDateFormat === 'Local') {
+      dt = moment().format('YYYY-MM-DD');
+      tt = moment().format('HH:mm');
+    } else {
+      dt = moment().utc().format('YYYY-MM-DD');
+      tt = moment().utc().format('HH:mm');
+    }
 
     if (this.value !== '-' && this.value != null) {
-      dt = moment(this.value).format('YYYY-MM-DD');
-      tt = moment(this.value).format('HH:mm');
+        if (this.data.PageDateFormat === 'Local') {
+          dt = moment(this.value).format('YYYY-MM-DD');
+          tt = moment(this.value).format('HH:mm');
+        } else {
+          dt = moment(this.value).utc().format('YYYY-MM-DD');
+          tt = moment(this.value).utc().format('HH:mm');
+        }
     }
 
     tempElement.innerHTML =
@@ -674,9 +687,13 @@ function getYearCellEditor(): any {
 
     tempElement
       .querySelector('#btOK')
-      .addEventListener('click', function (): any {
-        that.value = moment($('#editorDate').val() + 'T' + $('#editorTime').val()).format('YYYY-MM-DDTHH:mm:ss');
+      .addEventListener('click', () => {
+        if (that.timeFormat === 'Local') {
+          that.value = moment($('#editorDate').val() + 'T' + $('#editorTime').val()).format('YYYY-MM-DDTHH:mm:ss');
+        } else {
+          that.value = moment($('#editorDate').val() + 'T' + $('#editorTime').val()).format('YYYY-MM-DDTHH:mm:ssZ');
 
+        }
         if (that.field === 'ActualEnd') {
           if (that.data.ActualStart === '-') {
             alert('Please set Actual Start first');
@@ -715,13 +732,13 @@ function getYearCellEditor(): any {
       });
     tempElement
       .querySelector('#btClear')
-      .addEventListener('click', function (): any {
+      .addEventListener('click', () => {
         that.value = null;
         params.stopEditing();
       });
     tempElement
       .querySelector('#btEsc')
-      .addEventListener('click', function (): any {
+      .addEventListener('click', () => {
         params.stopEditing();
       });
 
@@ -732,16 +749,16 @@ function getYearCellEditor(): any {
 
 function getTowReadyEditor(): any {
   function TowReadyCellEditor(): any { }
-  TowReadyCellEditor.prototype.getGui = function(): any {
+  TowReadyCellEditor.prototype.getGui = () => {
     return this.eGui;
   };
-  TowReadyCellEditor.prototype.getValue = function(): any {
+  TowReadyCellEditor.prototype.getValue = () => {
     return this.value;
   };
-  TowReadyCellEditor.prototype.isPopup = function(): any {
+  TowReadyCellEditor.prototype.isPopup = () => {
     return true;
   };
-  TowReadyCellEditor.prototype.init = function(params: any): any {
+  TowReadyCellEditor.prototype.init = function (params: any): any {
 
     this.value = params.value;
     this.data = params.data;
@@ -793,19 +810,19 @@ function getTowReadyEditor(): any {
 
     tempElement
       .querySelector('#btOK')
-      .addEventListener('click', function(): any {
+      .addEventListener('click', () => {
         that.value = $('#ready').val();
         params.stopEditing();
       });
     tempElement
       .querySelector('#btClear')
-      .addEventListener('click', function(): any {
+      .addEventListener('click', () => {
         that.value = null;
         params.stopEditing();
       });
     tempElement
       .querySelector('#btEsc')
-      .addEventListener('click', function(): any {
+      .addEventListener('click', () => {
         params.stopEditing();
       });
 

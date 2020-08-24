@@ -12,11 +12,6 @@
   <div style="display: flex; flex-direction: column;">
     <div *ngIf='selectMode == "Monitor"' style="margin-left:20px;height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px">
 
-<!--
-      <span style="width:5px">
-        <span [ngClass]="getOffsetBulletClass()">&bull;</span>
-      </span>
-    -->
       <label>Scheduled Tow Start From:</label>
       <select name="from" [(ngModel)]='offsetFrom' style="font-size: 12px;">
         <option value="-300" selected="selected">-5 hours</option>
@@ -28,7 +23,6 @@
         <option value="60">+1 hour</option>
         <option value="120">+2 hour</option>
         <option value="180">+3 hour</option>
-
       </select>
       <label style="margin-left: 10px;">To:</label>
       <select name="to" [(ngModel)]='offsetTo' style="font-size: 12px;">
@@ -48,20 +42,7 @@
       <button (click)="setCurrentRange()" style="font-size:12px;">Load</button>
 
     </div>
-    <div *ngIf='showDateRange && selectMode == "FlightReview"'
-      style="margin-left:20px;height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px">
-      <label>Tows for Flights Between:</label>
-      <input class="gridinput" [(ngModel)]="rangeDateFrom" style="font-size:12px;width:120px" type="date">
-      <label style="margin-left: 10px; margin-right: 10px;">and</label>
-      <input class="gridinput" [(ngModel)]="rangeDateTo" style="font-size:12px;width:120px" type="date">
-      <select class="gridinput" name="towTypes" id="towTypes" style="width:100px; font-size: 12px;margin-left:15px">
-        <option value="Incomplete" selected="selected">Incomplete</option>
-        <option value="Complete">Complete</option>
-        <option value="All">All</option>
-      </select>
-      <button (click)="setSelectedFlightRange()" style="font-size:12px;">Load</button>
 
-    </div>
 
     <div *ngIf='showDateRange && selectMode == "TowReview"'
     style="margin-left:20px;height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px">
@@ -79,6 +60,12 @@
   </div>
 
   </div>
+  <label style="margin-left:20px">Time Format:</label>
+  <select name="timeFormat" [(ngModel)]='timeFormat' (change)='timeFormatChange($event.target.value)' style="font-size: 12px;">
+    <option value="Local" selected="selected">Local Time</option>
+    <option value="UTC">UTC Time</option>
+  </select>
+
     <button mat-icon-button [matMenuTriggerFor]="menu"  style="margin-left:auto; margin-right: 20px; background-color: #181D1F;">
       <mat-icon style="color:whitesmoke; background-color: #181D1F;">more_vert</mat-icon>
     </button>
@@ -87,8 +74,8 @@
       <button mat-menu-item id="copyBtn" (click)="copyToClipboard()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>Copy</button>
       <button mat-menu-item id="csvBtn" (click)="saveToCSV()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>Save to CSV</button>
       <hr />
-      <button mat-menu-item id="loginBtn" (click)="openDialog()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>Login</button>
-      <button mat-menu-item id="logoutBtn" (click)="logout()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>Logout</button>
+      <button mat-menu-item [disabled] = "disableLogin" id="loginBtn" (click)="openDialog()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>Login</button>
+      <button mat-menu-item [disabled] = "disableLogout" id="logoutBtn" (click)="logout()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>Logout</button>
       <hr/>
       <button mat-menu-item id="aboutBtn" (click)="about()" style='font-size: 14px; width:100px; border:unset;height:24px;line-height: 24px;'>About</button>
     </mat-menu>
@@ -109,8 +96,10 @@
   <span style="margin-left: 10px; font-size: 14px;color:cadetblue">{{lastUpdate}}</span>
   <span style="margin-left: 10px; font-size: 14px">Rows:</span>
   <span style="margin-left: 10px; font-size: 14px;color:cadetblue">{{numRows}}</span>
-  <span style="margin-left: 10px; font-size: 14px">Display Mode:</span>
-  <span style="margin-left: 10px; font-size: 14px;" [ngClass]="displayMode">{{displayMode}}</span>
+  <span style="margin-left: 10px; font-size: 14px">Time Format:</span>
+  <span style="margin-left: 10px; font-size: 14px;color:cadetblue">{{globals.timeZone}}</span>
+<!--  <span style="margin-left: 10px; font-size: 14px">Display Mode:</span>
+  <span style="margin-left: 10px; font-size: 14px;" [ngClass]="displayMode">{{displayMode}}</span> -->
   <span style="margin-left: 10px; font-size: 14px">User Status:</span>
   <span style="margin-left: 10px; font-size: 14px;"
     [ngClass]="{'LoggedIn': globals.userStatus =='Logged In','LoggedOut': globals.userStatus =='Logged Out' || globals.userStatus =='No Access' ,'NoEdit': globals.userStatus =='No Edit Access'}">{{globals.userStatus}}</span>
