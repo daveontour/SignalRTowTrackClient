@@ -596,10 +596,25 @@ export class AppComponent implements OnInit {
   }
 
   getCSVData(): string {
-    let cb = 'TowingId,Status,ReadyState,FromStand,ToStand,ScheduledStart,ScheduledEnd,ActualStart,ActualEnd,AircraftRegistration,AircraftType,Arrival,Departure,TowPlan\n';
+    let cb = 'TowingId,Status,ReadyState,FromStand,ToStand,ScheduledStart,ScheduledEnd,ActualStart,ActualEnd,AircraftRegistration,AircraftType,ArrivalFlight,SIBT,DepartureFlight,SOBT\n';
 
     for (let i = 0; i < this.numRows; i++) {
       const rowData = this.gridApi.getDisplayedRowAtIndex(i).data;
+
+      let arrFlt = '';
+      let arrTime = '';
+      let depFlt = '';
+      let depTime = '';
+
+      if (rowData.Arrival !== null && rowData.Arrival !== '' && typeof(rowData.Arrival) !== 'undefined' && rowData.Arrival !== '-'){
+        arrTime = rowData.Arrival.split(' ')[1];
+        arrFlt = rowData.Arrival.split(' ')[0];
+      }
+      if (rowData.Departure !== null && rowData.Departure !== '' && typeof(rowData.Departure) !== 'undefined' && rowData.Departure !== '-'){
+        depTime = rowData.Departure.split(' ')[1];
+        depFlt = rowData.Departure.split(' ')[0];
+      }
+
       cb += rowData.TowingID + ',';
       cb += rowData.Status + ',';
       cb += rowData.Ready + ',';
@@ -611,8 +626,10 @@ export class AppComponent implements OnInit {
       cb += rowData.ActualEnd + ',';
       cb += rowData.AircraftRegistration + ',';
       cb += rowData.AircraftType + ',';
-      cb += rowData.Arrival + ',';
-      cb += rowData.Departure + '\n';
+      cb += arrFlt  + ',';
+      cb += arrTime  + ',';
+      cb += depFlt  + ',';
+      cb += depTime  + '\n';
 
     }
 
