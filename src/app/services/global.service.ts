@@ -13,5 +13,6 @@ export class GlobalService {
   public token = null;
   public userStatus = 'Logged Out';
   public timeZone = 'Local';
+  public blinkBeforeStart: number;
   constructor() { }
 }

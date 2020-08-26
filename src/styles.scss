@@ -3,44 +3,60 @@
 @import "../node_modules/ag-grid-community/src/styles/ag-theme-alpine/sass/ag-theme-alpine-mixin.scss";
 @import "../node_modules/ag-grid-community/src/styles/ag-theme-alpine-dark/sass/ag-theme-alpine-dark-mixin.scss";
 
+
 .ag-theme-alpine-dark {
-    @include ag-theme-alpine-dark();
+  @include ag-theme-alpine-dark();
 }
 
-.rag-red {
-    background-color: lightcoral;
-  }
-  .rag-green {
-    background-color: lightgreen;
-  }
-  .rag-amber {
-    background-color: lightsalmon;
-  }
-  
-  .rag-red-outer{
-    background-color: lightcoral !important;
-  }
-  
-  .rag-green-outer{
-    background-color: lightgreen;
-  }
-  
-  .rag-amber-outer {
-    background-color: lightsalmon;
-  }
+.SCHEDULED{
+  background-color: limegreen;
+  color:black;
+}
+.NOTSTARTED{
+  background-color: red;
+  color: black;
+}
+.STARTED,
+.STARTEDEARLY,
+.STARTEDLATE
+{
+  background-color: yellow;
+  color: black;
+}
+.STARTEDRUNNINGOVERTIME
+{
+  background-color: coral;
+  color: black;
+}
+.COMPLETED,
+.COMPLETEDEARLY,
+.COMPLETEDLATE
+{
+  background-color: gray;
+  color: black;
+}
+.COMPLETEDDQMISSUES
+{
+  background-color: lightgray;
+  color: black;
+  animation: blinker 1s linear infinite;
+}
 
-  .test {
-    background-color: yellow;
-    color:black;
-  }
-  .testalert {
-    background-color: lightsalmon;
-    color:black;
-  }
+.BLINK {
+  animation: blinker 1s linear infinite;
+}
 
-  .testok {
-    background-color: lightgreen;
-    color:black;
+@keyframes blinker {
+  50% {
+    opacity: 0;
   }
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+}
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}

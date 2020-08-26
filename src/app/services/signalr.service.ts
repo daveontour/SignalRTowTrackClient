@@ -179,6 +179,7 @@ export class SignalRService {
     this.globals.token = token;
     const that = this;
     this.proxy.invoke('Login', id, token).done((data) => {
+      that.globals.blinkBeforeStart = data.BlinkBeforeStart;
       if (!data.View && !data.Edit) {
         const dialogRef = that.dialog.open(ConfirmationDialogComponent, {
           data: {

@@ -1,11 +1,12 @@
 .ag-header-cell-label {
-    justify-content: center;
- }
+  justify-content: center;
+}
 
- .grid-container {
+.grid-container {
   display: grid;
   grid-template-columns: auto auto auto;
 }
+
 .grid-item {
   background-color: rgba(255, 255, 255, 0.8);
   border: 1px solid rgba(0, 0, 0, 0.8);
@@ -13,13 +14,15 @@
   font-size: 30px;
   text-align: center;
 }
- .Rolling {
+
+.Rolling {
   color: lime;
 }
 
 .Fixed {
   color: yellow;
 }
+
 .Connected {
   color: lime;
 }
@@ -28,111 +31,100 @@
   color: yellow;
   animation: blinker 1s linear infinite;
 }
+
 .NoEdit {
   color: yellow;
 }
-  .Disconnected {
-    color: red;
-    animation: blinker 1s linear infinite;
-  }
 
-  .Loading {
-    margin-left: auto; 
-    margin-right: 30px;
-    font-size: 16px;
-    color: cadetblue;
-    font-weight: bold;
-    animation: blinker 1s linear infinite;   
-  }
+.Disconnected {
+  color: red;
+  animation: blinker 1s linear infinite;
+}
+
+.Loading {
+  margin-left: auto;
+  margin-right: 30px;
+  font-size: 16px;
+  color: cadetblue;
+  font-weight: bold;
+  animation: blinker 1s linear infinite;
+}
 
 
-  .LoggedIn {
-    color: lime;
-  }
+.LoggedIn {
+  color: lime;
+}
 
-  .Monitor {
-    color: lime;
+.Monitor {
+  color: lime;
 
-  }
-  .Review {
-    color: yellow;
-    animation: blinker 1s linear infinite;
-  }
+}
 
-  @keyframes blinker {
-    50% {
-      opacity: 0;
-    }
-  }
-  .LoggedOut {
-    color: red;
-  }
+.Test {
+  background-color: 'lime';
+  color: 'black';
+  animation: blinker 1s linear infinite;
+}
 
-  .Live {
-      color: skyblue;
-  }
-  
-  .Refresh {
-      color: mediumturquoise
-  }
-  
-  label {
-    margin-left: 5px;
-    margin-right: 3px;
-  }
-  
-  .gridinput {
-    font-family: inherit;
-    width:35px;
-    font-size: 9px;
-    border: 1px solid lightgray;
-    border-radius: 3px;
-    padding-left: 3px;
-  }
-  button {
-    font-family: inherit;
-    width:35px;
-    font-size: 9px;
-    border: 1px solid lightgray;
-    border-radius: 3px;
-    padding-left: 3px; 
-    margin-left: 5px;
-  }
-  
-  select {
-    font-family: inherit;
-    font-size: 9px;
-    border: 1px solid lightgray;
-    border-radius: 3px;
-    margin-left: 5px;
-  }
+.Review {
+  color: yellow;
+  animation: blinker 1s linear infinite;
+}
 
- .hide{
-    display: none
+@keyframes blinker {
+  50% {
+    opacity: 0;
   }
-  
-  .show {
-    display: inline;
-  }
+}
 
-  .rag-red {
-    background-color: lightcoral;
-  }
-  .rag-green {
-    background-color: lightgreen;
-  }
-  .rag-amber {
-    background-color: lightsalmon;
-  }
-  
-  .rag-red-outer .rag-element {
-    background-color: lightcoral !important;
-  }
-  
-  .rag-green-outer .rag-element {
-    background-color: lightgreen;
-  }
-  
-  .rag-amber-outer .rag-element {
-    background-color: lightsalmon;
-  }
+.LoggedOut {
+  color: red;
+}
+
+.Live {
+  color: skyblue;
+}
+
+.Refresh {
+  color: mediumturquoise
+}
+
+label {
+  margin-left: 5px;
+  margin-right: 3px;
+}
+
+.gridinput {
+  font-family: inherit;
+  width: 35px;
+  font-size: 9px;
+  border: 1px solid lightgray;
+  border-radius: 3px;
+  padding-left: 3px;
+}
+
+button {
+  font-family: inherit;
+  width: 35px;
+  font-size: 9px;
+  border: 1px solid lightgray;
+  border-radius: 3px;
+  padding-left: 3px;
+  margin-left: 5px;
+}
+
+select {
+  font-family: inherit;
+  font-size: 9px;
+  border: 1px solid lightgray;
+  border-radius: 3px;
+  margin-left: 5px;
+}
+
+.hide {
+  display: none
+}
+
+.show {
+  display: inline;
+}

@@ -62,27 +62,25 @@ export class AppComponent implements OnInit {
     { headerName: 'Tow ID', field: 'TowingID', tooltipComponent: 'customPlanTooltip', tooltipField: 'TowingID' },
     {
       headerName: 'Status', field: 'Status', sortable: true, flex: 3, comparator: this.statusComparator, valueGetter: this.statusGetter,
-      cellStyle(params): any {
+      cellClassRules: {
+        SCHEDULED : (params: any) => { return params.data.Status === 'SCHEDULED'; },
+        NOTSTARTED : (params: any) => { return params.data.Status === 'NOT_STARTED'; },
+        STARTED : (params: any) => { return params.data.Status === 'STARTED'; },
+        STARTEDEARLY : (params: any) => { return params.data.Status === 'STARTED_EARLY'; },
+        STARTEDLATE : (params: any) => { return params.data.Status === 'STARTED_LATE'; },
+        STARTEDRUNNINGOVERTIME : (params: any) => { return params.data.Status === 'STARTED_RUNNING_OVERTIME'; },
+        COMPLETED : (params: any) => { return params.data.Status === 'COMPLETED'; },
+        COMPLETEDEARLY : (params: any) => { return params.data.Status === 'COMPLETED_EARLY'; },
+        COMPLETEDLATE : (params: any) => { return params.data.Status === 'COMPLETED_LATE'; },
+        COMPLETEDDQMISSUES : (params: any) => { return params.data.Status === 'COMPLETED_DQM_ISSUES'; },
 
-        if (params.data.Status === 'NOT_STARTED') {
-          return { 'background-color': 'red', color: 'black' };
-        }
-        if (params.data.Status === 'SCHEDULED') {
-          return { 'background-color': 'lime', color: 'black' };
-        }
-        if (params.data.Status === 'STARTED' || params.data.Status === 'STARTED_EARLY' || params.data.Status === 'STARTED_LATE') {
-          return { 'background-color': 'yellow', color: 'black' };
-        }
-        if (params.data.Status === 'COMPLETED' || params.data.Status === 'COMPLETED_EARLY' || params.data.Status === 'COMPLETED_LATE') {
-          return { 'background-color': 'gray' };
-        }
-        if (params.data.Status === 'COMPLETED_DQM_ISSUES') {
-          return { 'background-color': 'lightgray', color: 'black' };
-        }
-        if (params.data.Status === 'STARTED_RUNNING_OVERTIME') {
-          return { 'background-color': 'lightcoral', color: 'black' };
-        }
-        return { 'background-color': 'gray' };
+        BLINK: (params: any) => {
+          if (params.data.BlinkBeforeStart < 0){
+            return false;
+          }
+        // tslint:disable-next-line:max-line-length
+        return (params.data.Status === 'SCHEDULED' && moment(params.data.ScheduledStart).diff(moment(), 'm') < params.data.BlinkBeforeStart);
+        },
       }
     },
     { headerName: 'Ready', field: 'Ready', colId: 'ReadyEdit', flex: 1, editable: true, cellEditor: 'readyCellEditor', hide: true },
@@ -123,8 +121,21 @@ export class AppComponent implements OnInit {
 
   ) {
 
-    this.getRowNodeId = (data: any) => {
-      return data.TowingID;
+    const that = this;
+
+    // Set it so the update is on the minute
+    const sec = ((60 - moment().second()) + 5) * 1000;
+
+
+    setTimeout(() => {
+      that.minuteTick();
+      setInterval(() => {
+        that.minuteTick();
+      }, 60000);
+    }, sec);
+
+    this.getRowNodeId = (d: any) => {
+      return d.TowingID;
     };
     // tslint:disable-next-line:max-line-length
     this.frameworkComponents = { customTooltip: CustomTooltip, customPlanTooltip: CustomPlanTooltip, customStandTooltip: CustomStandTooltip };
@@ -136,6 +147,13 @@ export class AppComponent implements OnInit {
     this.components = { yearCellEditor: getYearCellEditor(), readyCellEditor: getTowReadyEditor() };
   }
 
+  minuteTick(): any {
+    const params = {
+      force: false,
+      suppressFlash: false,
+    };
+    this.gridApi.refreshCells(params);
+  }
   ngOnInit(): void {
     this.subscribeToEvents();
   }
@@ -422,7 +440,10 @@ export class AppComponent implements OnInit {
     } else {
       this.lastUpdate = moment().format('HH:mm:ss');
     }
-
+    const params = {
+      force: false,
+    };
+    this.gridApi.refreshCells(params);
   }
   addGridRow(addTow: any): void {
     // // Only process updates in Monitor Mode
@@ -436,6 +457,10 @@ export class AppComponent implements OnInit {
       this.lastUpdate = moment().format('HH:mm:ss');
       this.numRows = this.gridApi.getDisplayedRowCount();
     }
+    const params = {
+      force: false,
+    };
+    this.gridApi.refreshCells(params);
   }
   deleteGridRow(removeTow: any): void {
     // Only process updates in Monitor Mode
@@ -450,6 +475,10 @@ export class AppComponent implements OnInit {
     } else {
       this.lastUpdate = moment().format('HH:mm:ss');
     }
+    const params = {
+      force: false,
+    };
+    this.gridApi.refreshCells(params);
   }
 
   transformRow(row: any): any {
@@ -494,6 +523,7 @@ export class AppComponent implements OnInit {
     }
 
     row.PageDateFormat = this.globals.timeZone;
+    row.BlinkBeforeStart = this.globals.blinkBeforeStart;
 
     return row;
   }
