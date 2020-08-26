@@ -738,8 +738,8 @@ function getYearCellEditor(): any {
 
     tempElement.innerHTML =
       '<div class="yearSelect">' +
-      '<input class="gridinput" id="editorTime" style="width:130px; height:30px" type="time" value="' + tt + '">' +
       '<input class="gridinput" id="editorDate" style="width:130px; height:30px" type="date" value="' + dt + '">' +
+      '<input class="gridinput" id="editorTime" style="width:130px; height:30px" type="time" value="' + tt + '">' +
       '<button id="btOK" class="yearButton" style="height:35px">OK</button>' +
       '<button id="btClear" class="yearButton" style="height:35px">Clear</button>' +
       '<button id="btEsc" class="yearButton" style="height:35px">Esc</button>' +
@@ -892,4 +892,3 @@ function getTowReadyEditor(): any {
   };
   return TowReadyCellEditor;
 }
-
