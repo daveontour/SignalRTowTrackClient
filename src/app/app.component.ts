@@ -600,8 +600,9 @@ export class AppComponent implements OnInit {
 
   saveToCSV(): void {
 
+    const ts = moment().format('DDMMYYYYHHmm');
     const cb = this.getCSVData();
-    const file = new File([cb], 'Tows.csv');
+    const file = new File([cb], 'Tows_' + ts + '.csv');
     const link = document.createElement('a');
     link.download = file.name;
     link.href = URL.createObjectURL(file);
@@ -691,6 +692,7 @@ export class AppComponent implements OnInit {
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
         message: 'AMS Tow Tracker - SITA MEIA Integration Team',
+        message2: 'Version 0.91'
       },
       disableClose: true
     });
@@ -831,8 +833,7 @@ function getTowReadyEditor(): any {
         '<div class="yearSelect">' +
         '<select class="gridinput" name="ready" id="ready" style="height:35px">' +
         '<option value="R" selected = "selected">R</option>' +
-        '<option value="Finished">Finished</option>' +
-        '<option value="Wait for confirmation" >Wait for confirmation</option>' +
+        '<option value="Wait for Instruction" >Wait for Instruction</option>' +
         '</select>' +
         '<button id="btOK" class="yearButton" style="height:35px">OK</button>' +
         '<button id="btClear" class="yearButton" style="height:35px">Clear</button>' +

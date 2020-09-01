@@ -7,6 +7,7 @@ import { NgZone } from '@angular/core';
 })
 export class ConfirmationDialogComponent {
     message = 'Login for edit access';
+    message2 = '';
     confirmButtonText = 'OK';
     cancelButtonText = 'Cancel';
     id: string;
@@ -17,6 +18,7 @@ export class ConfirmationDialogComponent {
         public dialogRef: MatDialogRef<ConfirmationDialogComponent>) {
         if (data) {
             this.message = data.message || this.message;
+            this.message2 = data.message2 || this.message2;
             if (data.buttonText) {
                 this.confirmButtonText = data.buttonText.ok || this.confirmButtonText;
                 this.cancelButtonText = data.buttonText.cancel || this.cancelButtonText;

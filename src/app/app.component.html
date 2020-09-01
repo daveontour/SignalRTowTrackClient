@@ -101,7 +101,7 @@
 <!--  <span style="margin-left: 10px; font-size: 14px">Display Mode:</span>
   <span style="margin-left: 10px; font-size: 14px;" [ngClass]="displayMode">{{displayMode}}</span> -->
   <span style="margin-left: 10px; font-size: 14px">User Status:</span>
-  <span style="margin-left: 10px; font-size: 14px;"
-    [ngClass]="{'LoggedIn': globals.userStatus =='Logged In','LoggedOut': globals.userStatus =='Logged Out' || globals.userStatus =='No Access' ,'NoEdit': globals.userStatus =='No Edit Access'}">{{globals.userStatus}}</span>
+  <span style="margin-left: 10px; font-size: 14px;"  [ngClass]="{'LoggedIn': globals.userStatus =='Logged In','LoggedOut': globals.userStatus =='Logged Out' || globals.userStatus =='No Access' ,'NoEdit': globals.userStatus =='No Edit Access'}">{{globals.userStatus}}</span>
+  <span style="margin-left: 30px; font-size: 14px;color: orange;">Project Supported Code. No Support via SGS. Version 0.91</span>  
   <span class="Loading">{{loadingStatus}}</span>
 </div>
