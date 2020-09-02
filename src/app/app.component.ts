@@ -692,7 +692,7 @@ export class AppComponent implements OnInit {
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
         message: 'AMS Tow Tracker - SITA MEIA Integration Team',
-        message2: 'Version 0.91'
+        message2: 'Version 0.92'
       },
       disableClose: true
     });
@@ -840,27 +840,13 @@ function getTowReadyEditor(): any {
         '<button id="btEsc" class="yearButton" style="height:35px">Esc</button>' +
         '</div>';
     }
-    if (this.value === 'Finished') {
-      tempElement.innerHTML =
-        '<div class="yearSelect">' +
-        '<select class="gridinput" name="ready" id="ready" style="height:35px">' +
-        '<option value="R">R</option>' +
-        '<option value="Finished" selected = "selected">Finished</option>' +
-        '<option value="Wait for confirmation" >Wait for confirmation</option>' +
-        '</select>' +
-        '<button id="btOK" class="yearButton" style="height:35px">OK</button>' +
-        '<button id="btClear" class="yearButton" style="height:35px">Clear</button>' +
-        '<button id="btEsc" class="yearButton" style="height:35px">Esc</button>' +
-        '</div>';
-    }
 
-    if (this.value === 'Wait for confirmation') {
+    if (this.value === 'Wait for Instruction') {
       tempElement.innerHTML =
         '<div class="yearSelect">' +
         '<select class="gridinput" name="ready" id="ready" style="height:35px">' +
         '<option value="R">R</option>' +
-        '<option value="Finished" >Finished</option>' +
-        '<option value="Wait for confirmation" selected = "selected">Wait for confirmation</option>' +
+        '<option value="Wait for Instruction" selected = "selected">Wait for Instruction</option>' +
         '</select>' +
         '<button id="btOK" class="yearButton" style="height:35px">OK</button>' +
         '<button id="btClear" class="yearButton" style="height:35px">Clear</button>' +
