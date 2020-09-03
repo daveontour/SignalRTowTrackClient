@@ -47,9 +47,9 @@
     <div *ngIf='showDateRange && selectMode == "TowReview"'
     style="margin-left:20px;height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px">
     <label>Tows Between:</label>
-    <input class="gridinput" [(ngModel)]="rangeDateFrom" style="font-size:12px;width:120px" type="date">
+    <input class="gridinput" [(ngModel)]="rangeDateFrom" (change)='rangeDateFromSet($event)' style="font-size:12px;width:120px" type="date">
     <label style="margin-left: 10px; margin-right: 10px;">and</label>
-    <input class="gridinput" [(ngModel)]="rangeDateTo" style="font-size:12px;width:120px" type="date">
+    <input class="gridinput" [(ngModel)]="rangeDateTo" (change)='rangeDateToSet($event)' style="font-size:12px;width:120px" type="date">
     <select class="gridinput" name="towTypes" id="towTypes" style="font-size:12px;width:100px;margin-left:15px">
       <option value="Incomplete" selected="selected">Incomplete</option>
       <option value="Complete">Complete</option>

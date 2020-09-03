@@ -31,6 +31,8 @@ export class CustomStandTooltip implements ITooltipAngularComp {
   public params: any;
   public data: any;
   public row: any;
+  public Name = '-';
+  public Area = '-';
 
   agInit(params): void {
 
@@ -38,18 +40,50 @@ export class CustomStandTooltip implements ITooltipAngularComp {
     this.row = this.params.api.getDisplayedRowAtIndex(params.rowIndex);
 
     const col = params.colDef.tooltipField;
+
     if (col === 'From'){
-      this.data = this.row.data.FromStand;
-    } else {
-      this.data = this.row.data.ToStand;
+      try {
+        this.Name = this.row.data.FromStand.Name;
+      } catch (ex){
+        this.Name = '-';
+      }
+      try {
+        this.Area = this.row.data.FromStand.Area;
+      } catch (ex){
+        this.Area = '-';
+      }
     }
 
-    if (this.data.Name === null){
-      this.data.Name = '-';
+    if (col === 'To'){
+      try {
+        this.Name = this.row.data.ToStand.Name;
+      } catch (ex){
+        this.Name = '-';
+      }
+      try {
+        this.Area = this.row.data.ToStand.Area;
+      } catch (ex){
+        this.Area = '-';
+      }
     }
-    if (this.data.Area === null){
-      this.data.Name = '-';
-    }
+
+    // try {
+    //   if (col === 'From' && this.row.data) {
+    //     this.data = this.row.data.FromStand;
+    //   } else {
+    //     this.data = this.row.data.ToStand;
+    //   }
+    // } catch (ex) {
+    //   this.Name = '-';
+    //   this.Area = '-';
+    // }
+
+    // if (this.data.Name === null) {
+    //   this.data.Name = '-';
+    // }
+    // if (this.data.Area === null) {
+    //   this.data.Name = '-';
+    // }
   }
 }
 

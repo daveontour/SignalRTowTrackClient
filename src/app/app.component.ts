@@ -265,7 +265,7 @@ export class AppComponent implements OnInit {
     this.globals.rangeMode = 'offset';
     this.displayMode = 'Monitor';
     this.selectMode = 'Monitor';
-
+    this.loadingStatus = '';
     this.hubService.logout();
   }
 
@@ -324,6 +324,7 @@ export class AppComponent implements OnInit {
       that.rowData = [];
       that.disableLogout = true;
       that.disableLogin = false;
+      that.loadingStatus = '';
     });
     this.hubService.forceLogoout.subscribe(() => {
       that.logout();
@@ -582,19 +583,35 @@ export class AppComponent implements OnInit {
     this.globals.offsetTo = this.offsetTo;
     this.hubService.getTows(this.offsetFrom, this.offsetTo);
   }
+
+  rangeDateFromSet(evt): any{
+    const ms = moment(this.rangeDateFrom, 'YYYY-MM-DD');
+    this.rangeDateTo = ms.add(7, 'days').format('YYYY-MM-DD');
+  }
+  rangeDateToSet(evt): any{
+   // const ms = moment(this.rangeDateTo, 'YYYY-MM-DD');
+   // this.rangeDateFrom = ms.add(-3, 'days').format('YYYY-MM-DD');
+  }
   setSelectedDateRange(): any {
 
-    this.loadingStatus = 'Loading Data';
+
     this.globals.rangeMode = 'range';
     this.displayMode = 'Review';
 
     const ms = moment(this.rangeDateFrom, 'YYYY-MM-DD');
     const me = moment(this.rangeDateTo, 'YYYY-MM-DD');
 
+
+    const rge = me.diff(ms, 'days');
+    if (rge > 31){
+      alert('Maximum of range of 31 days');
+      return;
+    }
+
     this.globals.offsetFrom = ms.diff(moment(), 'm');
     this.globals.offsetTo = me.diff(moment(), 'm');
 
-
+    this.loadingStatus = 'Loading Data';
     this.hubService.getTowsForDateRange(this.rangeDateFrom, this.rangeDateTo, $('#towTypes').val());
   }
 
@@ -670,7 +687,9 @@ export class AppComponent implements OnInit {
   // The login dialog
   openDialog(): any {
 
+
     const that = this;
+    that.loadingStatus = '';
     const dialogRef = this.dialog.open(LoginDialogComponent, {
       data: {
         message: 'Login to access Tow Tracker using your AMS credentials',

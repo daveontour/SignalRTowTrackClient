@@ -15,6 +15,7 @@ import {MatMenuModule} from '@angular/material/menu';
 
 import {ConfirmationDialogComponent} from './dialogs/confirmation-dialog.component';
 import {LoginDialogComponent} from './dialogs/login-dialog.component';
+import {ProceedDialogComponent} from './dialogs/proceed-dialog.component';
 import { CommonModule } from '@angular/common';
 
 //import {NgModule} from '@angular/core';
@@ -65,7 +66,7 @@ import {OverlayModule} from '@angular/cdk/overlay';
 
 @NgModule({
   declarations: [
-    AppComponent, ConfirmationDialogComponent, LoginDialogComponent
+    AppComponent, ConfirmationDialogComponent, LoginDialogComponent, ProceedDialogComponent
   ],
   imports: [
    BrowserModule,

@@ -5,7 +5,8 @@ import { NgZone } from '@angular/core';
 import { GlobalService } from './global.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../dialogs/confirmation-dialog.component';
-
+import { LoginDialogComponent } from '../dialogs/login-dialog.component';
+import { ProceedDialogComponent } from '../dialogs/proceed-dialog.component';
 declare var jQuery: any;
 declare var $: any;
 
@@ -29,7 +30,7 @@ export class SignalRService {
   loggedOut = new EventEmitter<boolean>();
   forceLogoout = new EventEmitter<any>();
 
- // private connectionIsEstablished = false;
+  // private connectionIsEstablished = false;
   private hubConnection: HubConnection;
   private proxy;
   public disableAccess = true;
@@ -104,7 +105,7 @@ export class SignalRService {
         this.zone.run(() => { });
       })
       // tslint:disable-next-line:variable-name
-      .catch( (_err: any) => {
+      .catch((_err: any) => {
         setTimeout(() => { that.startConnection(); }, 5000);
         this.zone.run(() => { });
       });
@@ -126,12 +127,36 @@ export class SignalRService {
   public getTowsForDateRange(rangeDateFrom: any, rangeDateTo: any, type: any): any {
     const that = this;
 
-    this.proxy.invoke('getTowsForDateRange', rangeDateFrom, rangeDateTo, type).done((tows) => {
-      that.towsReceived.emit(tows);
-      that.zone.run(() => { });
+    this.proxy.invoke('checkInCacheForDateRange', rangeDateFrom, rangeDateTo).done((c) => {
+
+      if (c.In) {
+        this.proxy.invoke('getTowsForDateRange', rangeDateFrom, rangeDateTo, type).done((tows) => {
+          that.towsReceived.emit(tows);
+          that.zone.run(() => { });
+        }).fail((error) => {
+          console.log('Invocation of getTowsForDateRange failed. Error: ' + error);
+        });
+      } else {
+
+        const dialogRef = this.dialog.open(ProceedDialogComponent, {
+          disableClose: true
+        });
+
+        dialogRef.afterClosed().subscribe((data: any) => {
+          if (data.confirmed) {
+            that.proxy.invoke('getTowsForDateRange', rangeDateFrom, rangeDateTo, type).done((tows) => {
+              that.towsReceived.emit(tows);
+              that.zone.run(() => { });
+            }).fail((error) => {
+              console.log('Invocation of getTowsForDateRange failed. Error: ' + error);
+            });
+          }
+        });
+      }
     }).fail((error) => {
       console.log('Invocation of getTowsForDateRange failed. Error: ' + error);
     });
+
   }
 
   public updateActualStart(start: any, id: any): any {
