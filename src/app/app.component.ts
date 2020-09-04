@@ -1,6 +1,6 @@
 import { SignalRService } from './services/signalr.service';
 import { GlobalService } from './services/global.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, Input } from '@angular/core';
 
 import * as moment from 'moment';
 import { HttpClient } from '@angular/common/http';
@@ -11,8 +11,9 @@ import { ChangeDetectorRef } from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 import { LoginDialogComponent } from './dialogs/login-dialog.component';
-import { ConfirmationDialogComponent } from './dialogs/confirmation-dialog.component';
 import { data } from 'jquery';
+import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
+import { NgZone } from '@angular/core';
 
 
 @Component({
@@ -21,6 +22,9 @@ import { data } from 'jquery';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+  @Input() content: TemplateRef<string>;
+  public closeResult = '';
+
   public displayMode = 'Monitor';
   public rowData: any;
   public getRowNodeId: any;
@@ -113,11 +117,13 @@ export class AppComponent implements OnInit {
   };
 
   constructor(
+    private zone: NgZone,
     private http: HttpClient,
     public globals: GlobalService,
     public hubService: SignalRService,
     private ref: ChangeDetectorRef,
     private dialog: MatDialog,
+    private modalService: NgbModal
 
   ) {
 
@@ -316,6 +322,7 @@ export class AppComponent implements OnInit {
         that.disableLogout = true;
         that.disableLogin = false;
         that.openDialog();
+        this.zone.run(() => { });
       }
     });
 
@@ -586,7 +593,7 @@ export class AppComponent implements OnInit {
 
   rangeDateFromSet(evt): any{
     const ms = moment(this.rangeDateFrom, 'YYYY-MM-DD');
-    this.rangeDateTo = ms.add(7, 'days').format('YYYY-MM-DD');
+    this.rangeDateTo = ms.add(31, 'days').format('YYYY-MM-DD');
   }
   rangeDateToSet(evt): any{
    // const ms = moment(this.rangeDateTo, 'YYYY-MM-DD');
@@ -594,6 +601,8 @@ export class AppComponent implements OnInit {
   }
   setSelectedDateRange(): any {
 
+    this.rowData = [];
+    this.zone.run(() => { });
 
     this.globals.rangeMode = 'range';
     this.displayMode = 'Review';
@@ -601,17 +610,21 @@ export class AppComponent implements OnInit {
     const ms = moment(this.rangeDateFrom, 'YYYY-MM-DD');
     const me = moment(this.rangeDateTo, 'YYYY-MM-DD');
 
+    if ( !ms.isValid() || !ms.isValid()){
+      const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker', 'Warning: Invalid date range', '', 'sm');
+      return;
+    }
 
     const rge = me.diff(ms, 'days');
     if (rge > 31){
-      alert('Maximum of range of 31 days');
+      const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker', 'Warning: Maximum search range of 31 days', '', 'sm');
       return;
     }
+
 
     this.globals.offsetFrom = ms.diff(moment(), 'm');
     this.globals.offsetTo = me.diff(moment(), 'm');
 
-    this.loadingStatus = 'Loading Data';
     this.hubService.getTowsForDateRange(this.rangeDateFrom, this.rangeDateTo, $('#towTypes').val());
   }
 
@@ -635,12 +648,8 @@ export class AppComponent implements OnInit {
     document.execCommand('copy');
     document.body.removeChild(dummy);
 
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        message: 'Grid data copied to clipboard',
-      },
-      disableClose: true
-    });
+    const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker', 'Grid data copied to clipboard', '', 'sm');
+
   }
 
   getCSVData(): string {
@@ -687,34 +696,24 @@ export class AppComponent implements OnInit {
   // The login dialog
   openDialog(): any {
 
-
     const that = this;
-    that.loadingStatus = '';
-    const dialogRef = this.dialog.open(LoginDialogComponent, {
-      data: {
-        message: 'Login to access Tow Tracker using your AMS credentials',
-        buttonText: {
-          ok: 'Login',
-          cancel: 'Cancel'
-        }
-      },
-      disableClose: true
-    });
-
-    dialogRef.afterClosed().subscribe((data: any) => {
-      if (data.confirmed) {
-        that.hubService.login(data.id, data.token);
+    // tslint:disable-next-line:max-line-length
+    const modalRef = this.modalService.open(LoginDialogComponent, { centered: true, size: 'sm', backdrop: 'static'});
+    modalRef.result.then((result) => {
+      if (result.login){
+        that.hubService.login(result.id, result.token);
+      } else {
+        that.openDialog();
+        that.zone.run(() => { });
       }
+    }, (reason) => {
+      that.openDialog();
+      that.zone.run(() => { });
     });
   }
+
   about(): void {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        message: 'AMS Tow Tracker - SITA MEIA Integration Team',
-        message2: 'Version 0.92'
-      },
-      disableClose: true
-    });
+    const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker', 'AMS Tow Tracker - SITA MEIA Integration Team', 'Version 0.95', 'sm');
   }
 }
 

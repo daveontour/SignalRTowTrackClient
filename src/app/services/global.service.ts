@@ -1,5 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgModuleRef } from '@angular/core';
 import * as moment from 'moment';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { GenericAlertComponent } from '../dialogs/generic-alert.component';
 
 @Injectable({
   providedIn: 'root'
@@ -14,5 +16,16 @@ export class GlobalService {
   public userStatus = 'Logged Out';
   public timeZone = 'Local';
   public blinkBeforeStart: number;
-  constructor() { }
+  constructor(private modalService: NgbModal) { }
+
+  public openModalAlert(title: string, message: string, message2: string = '', sizeS: string = 'lg' ): any {
+    const modalRef = this.modalService.open(GenericAlertComponent, { centered: true, size: sizeS, backdrop: 'static'});
+    modalRef.componentInstance.title = title;
+    modalRef.componentInstance.message = message;
+    modalRef.componentInstance.message2 = message2;
+    modalRef.componentInstance.button1 = 'Close';
+    modalRef.componentInstance.showButton2 = false;
+
+    return modalRef;
+  }
 }

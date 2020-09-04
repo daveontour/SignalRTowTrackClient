@@ -1,12 +1,14 @@
 import { Injectable, EventEmitter } from '@angular/core';
+import * as moment from 'moment';
 import 'jquery';
 import { HubConnection } from 'signalr';
 import { NgZone } from '@angular/core';
 import { GlobalService } from './global.service';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmationDialogComponent } from '../dialogs/confirmation-dialog.component';
-import { LoginDialogComponent } from '../dialogs/login-dialog.component';
-import { ProceedDialogComponent } from '../dialogs/proceed-dialog.component';
+import { ProceedLoadDialogComponent } from '../dialogs/proceedload-dialog.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { LoadingDialogComponent } from '../dialogs/loading-dialog.component';
+import { BadLoginDialogComponent } from '../dialogs/badlogin-dialog.component';
 declare var jQuery: any;
 declare var $: any;
 
@@ -35,7 +37,7 @@ export class SignalRService {
   private proxy;
   public disableAccess = true;
 
-  constructor(private zone: NgZone, public globals: GlobalService, public dialog: MatDialog) {
+  constructor(private zone: NgZone, public globals: GlobalService, public dialog: MatDialog, private modalService: NgbModal) {
     this.createConnection();
     this.registerOnServerEvents();
     this.startConnection();
@@ -130,28 +132,41 @@ export class SignalRService {
     this.proxy.invoke('checkInCacheForDateRange', rangeDateFrom, rangeDateTo).done((c) => {
 
       if (c.In) {
+        const modaLoadRef = this.modalService.open(LoadingDialogComponent, { centered: true, size: 'sm', backdrop: 'static'});
         this.proxy.invoke('getTowsForDateRange', rangeDateFrom, rangeDateTo, type).done((tows) => {
+          modaLoadRef.close();
           that.towsReceived.emit(tows);
           that.zone.run(() => { });
         }).fail((error) => {
+          modaLoadRef.close();
+          that.globals.openModalAlert('SITA AMS Tow Tracker', 'Loading Data Failed', '', 'sm');
+          that.zone.run(() => { });
           console.log('Invocation of getTowsForDateRange failed. Error: ' + error);
         });
       } else {
 
-        const dialogRef = this.dialog.open(ProceedDialogComponent, {
-          disableClose: true
-        });
-
-        dialogRef.afterClosed().subscribe((data: any) => {
-          if (data.confirmed) {
+        // tslint:disable-next-line:max-line-length
+        const modalRef = this.modalService.open(ProceedLoadDialogComponent, { centered: true, size: 'sm', backdrop: 'static'});
+        modalRef.componentInstance.param1 = moment(c.FromTime).format('YYYY-MM-DD');
+        modalRef.componentInstance.param2 = moment(c.ToTime).format('YYYY-MM-DD');
+        modalRef.componentInstance.param3 = moment(rangeDateFrom).format('YYYY-MM-DD');
+        modalRef.componentInstance.param4 = moment(rangeDateTo).format('YYYY-MM-DD');
+        modalRef.result.then((result) => {
+          if (result.proceed){
+            const modaLoadRef = this.modalService.open(LoadingDialogComponent, { centered: true, size: 'sm', backdrop: 'static'});
+            that.zone.run(() => { });
             that.proxy.invoke('getTowsForDateRange', rangeDateFrom, rangeDateTo, type).done((tows) => {
               that.towsReceived.emit(tows);
+              modaLoadRef.close();
               that.zone.run(() => { });
             }).fail((error) => {
+              modaLoadRef.close();
+              that.globals.openModalAlert('SITA AMS Tow Tracker', 'Loading Data Failed', '', 'sm');
               console.log('Invocation of getTowsForDateRange failed. Error: ' + error);
             });
           }
         });
+        that.zone.run(() => { });
       }
     }).fail((error) => {
       console.log('Invocation of getTowsForDateRange failed. Error: ' + error);
@@ -166,7 +181,7 @@ export class SignalRService {
     const that = this;
     this.proxy.invoke('UpdateActualStart', start, id).done((msg: string) => {
       if (msg !== 'OK') {
-        alert(msg);
+        const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Update Failed', msg, 'sm');
       }
     }).fail((error) => {
       console.log('Invocation of updateActual Start failed. Error: ' + error);
@@ -180,7 +195,7 @@ export class SignalRService {
     const that = this;
     this.proxy.invoke('UpdateActualEnd', end, id).done((msg: string) => {
       if (msg !== 'OK') {
-        alert(msg);
+        const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Update Failed', msg, 'sm');
       }
     }).fail((error) => {
       console.log('Invocation of updateActualEnd failed. Error: ' + error);
@@ -203,29 +218,22 @@ export class SignalRService {
     this.globals.id = id;
     this.globals.token = token;
     const that = this;
+    const modaLoadRef = this.modalService.open(LoadingDialogComponent, { centered: true, size: 'sm', backdrop: 'static'});
+    that.zone.run(() => { });
     this.proxy.invoke('Login', id, token).done((data) => {
+      modaLoadRef.close();
       that.globals.blinkBeforeStart = data.BlinkBeforeStart;
       if (!data.View && !data.Edit) {
-        const dialogRef = that.dialog.open(ConfirmationDialogComponent, {
-          data: {
-            message: 'Login incorrect or no configured edit capability'
-          },
-          disableClose: true
-        });
-        dialogRef.afterClosed().subscribe((confirmed: any) => {
+        const modalRef = this.modalService.open(BadLoginDialogComponent, { centered: true, size: 'sm', backdrop: 'static'});
+        modalRef.result.then((result) => {
           that.loggedIn.emit(false);
         });
         that.disableAccess = true;
         that.globals.userStatus = 'No Access';
       } else if (!data.Edit) {
 
-        const dialogRef = that.dialog.open(ConfirmationDialogComponent, {
-          data: {
-            message: 'Login Successful. View Access Only'
-          },
-          disableClose: true
-        });
-        dialogRef.afterClosed().subscribe((confirmed: any) => {
+        const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Login Successful. View Access Only', '', 'sm');
+        modalRef.result.then((result) => {
           that.disableAccess = false;
           that.loggedIn.emit(true);
         });
@@ -238,6 +246,8 @@ export class SignalRService {
       }
       that.zone.run(() => { });
     }).fail((error) => {
+      modaLoadRef.close();
+      const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Server Connection Failure', 'Unable to login', 'sm');
       console.log('Invocation of Login failed. Error: ' + error);
       that.allowActual.emit(false);
       that.zone.run(() => { });

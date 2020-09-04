@@ -1,3 +1,5 @@
+import { GenericAlertComponent } from './dialogs/generic-alert.component';
+import { LoadingDialogComponent } from './dialogs/loading-dialog.component';
 import { GlobalService } from './services/global.service';
 import { SignalRService } from './services/signalr.service';
 import { BrowserModule } from '@angular/platform-browser';
@@ -13,9 +15,9 @@ import { FormsModule } from '@angular/forms';
 import { MatDialogModule} from '@angular/material/dialog';
 import {MatMenuModule} from '@angular/material/menu';
 
-import {ConfirmationDialogComponent} from './dialogs/confirmation-dialog.component';
 import {LoginDialogComponent} from './dialogs/login-dialog.component';
-import {ProceedDialogComponent} from './dialogs/proceed-dialog.component';
+import {BadLoginDialogComponent} from './dialogs/badlogin-dialog.component';
+import {ProceedLoadDialogComponent} from './dialogs/proceedload-dialog.component';
 import { CommonModule } from '@angular/common';
 
 //import {NgModule} from '@angular/core';
@@ -62,11 +64,17 @@ import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {MatTreeModule} from '@angular/material/tree';
 import {OverlayModule} from '@angular/cdk/overlay';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+
+
+
+
 
 
 @NgModule({
   declarations: [
-    AppComponent, ConfirmationDialogComponent, LoginDialogComponent, ProceedDialogComponent
+    AppComponent, LoginDialogComponent, ProceedLoadDialogComponent,
+     LoadingDialogComponent, BadLoginDialogComponent, GenericAlertComponent
   ],
   imports: [
    BrowserModule,
@@ -77,12 +85,14 @@ import {OverlayModule} from '@angular/cdk/overlay';
    FormsModule,
    MatDialogModule,
    MatMenuModule,
-   MatIconModule
+   MatIconModule,
+   NgbModule
   ],
   providers: [
     GlobalService,
     SignalRService
   ],
+
 
   bootstrap: [AppComponent],
   exports: [
@@ -136,6 +146,7 @@ import {OverlayModule} from '@angular/cdk/overlay';
     ScrollingModule,
 
   ],
-  entryComponents: [ConfirmationDialogComponent, LoginDialogComponent],
+  entryComponents: [ LoginDialogComponent, ProceedLoadDialogComponent, 
+    LoadingDialogComponent, BadLoginDialogComponent, GenericAlertComponent ],
 })
 export class AppModule { }
