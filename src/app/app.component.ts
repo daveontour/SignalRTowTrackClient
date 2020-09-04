@@ -611,13 +611,19 @@ export class AppComponent implements OnInit {
     const me = moment(this.rangeDateTo, 'YYYY-MM-DD');
 
     if ( !ms.isValid() || !ms.isValid()){
-      const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker', 'Warning: Invalid date range', '', 'sm');
+      const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker', 'Warning: Invalid date range', 'Please select From and To dates', 'sm');
       return;
     }
 
     const rge = me.diff(ms, 'days');
     if (rge > 31){
-      const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker', 'Warning: Maximum search range of 31 days', '', 'sm');
+      const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker', 'Warning: Invalid date range', 'Maximum search range is 31 days', 'sm');
+      return;
+    }
+
+    if ( ms.isAfter(me)){
+      // tslint:disable-next-line:max-line-length
+      const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker', 'Warning: Invalid date range', 'From date is after To date', 'sm');
       return;
     }
 
