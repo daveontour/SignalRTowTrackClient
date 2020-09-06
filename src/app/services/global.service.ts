@@ -18,11 +18,12 @@ export class GlobalService {
   public blinkBeforeStart: number;
   constructor(private modalService: NgbModal) { }
 
-  public openModalAlert(title: string, message: string, message2: string = '', sizeS: string = 'lg' ): any {
+  public openModalAlert(title: string, message: string, message2: string = '', sizeS: string = 'lg', showFooter: boolean = true ): any {
     const modalRef = this.modalService.open(GenericAlertComponent, { centered: true, size: sizeS, backdrop: 'static'});
     modalRef.componentInstance.title = title;
     modalRef.componentInstance.message = message;
     modalRef.componentInstance.message2 = message2;
+    modalRef.componentInstance.showFooter = showFooter;
     modalRef.componentInstance.button1 = 'Close';
     modalRef.componentInstance.showButton2 = false;
 

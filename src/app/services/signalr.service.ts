@@ -179,11 +179,15 @@ export class SignalRService {
       return;
     }
     const that = this;
+    const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Updating Actual Start', 'Please Wait', 'sm', false);
     this.proxy.invoke('UpdateActualStart', start, id).done((msg: string) => {
+      modalRef.close();
       if (msg !== 'OK') {
-        const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Update Failed', msg, 'sm');
+       that.globals.openModalAlert('SITA AMS Tow Tracker', 'Update Failed', msg, 'sm');
       }
     }).fail((error) => {
+      modalRef.close();
+      that.globals.openModalAlert('SITA AMS Tow Tracker', 'Error Updating Actual Start', error, 'lg');
       console.log('Invocation of updateActual Start failed. Error: ' + error);
     });
   }
@@ -193,11 +197,15 @@ export class SignalRService {
       return;
     }
     const that = this;
+    const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Updating Actual End', 'Please Wait', 'sm', false);
     this.proxy.invoke('UpdateActualEnd', end, id).done((msg: string) => {
+      modalRef.close();
       if (msg !== 'OK') {
-        const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Update Failed', msg, 'sm');
+        that.globals.openModalAlert('SITA AMS Tow Tracker', 'Update Failed', msg, 'sm');
       }
     }).fail((error) => {
+      modalRef.close();
+      that.globals.openModalAlert('SITA AMS Tow Tracker', 'Error Updating Actual End', error, 'lg');
       console.log('Invocation of updateActualEnd failed. Error: ' + error);
     });
   }
@@ -207,9 +215,12 @@ export class SignalRService {
       return;
     }
     const that = this;
+    const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Updating Ready State', 'Please Wait', 'sm', false);
     this.proxy.invoke('UpdateReadyState', state, id).done((tows) => {
-
+      modalRef.close();
     }).fail((error) => {
+      modalRef.close();
+      that.globals.openModalAlert('SITA AMS Tow Tracker', 'Error Ready State', error, 'lg');
       console.log('Invocation of UpdateReadyState failed. Error: ' + error);
     });
   }

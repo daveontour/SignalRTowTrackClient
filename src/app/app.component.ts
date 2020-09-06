@@ -67,23 +67,23 @@ export class AppComponent implements OnInit {
     {
       headerName: 'Status', field: 'Status', sortable: true, flex: 3, comparator: this.statusComparator, valueGetter: this.statusGetter,
       cellClassRules: {
-        SCHEDULED : (params: any) => { return params.data.Status === 'SCHEDULED'; },
-        NOTSTARTED : (params: any) => { return params.data.Status === 'NOT_STARTED'; },
-        STARTED : (params: any) => { return params.data.Status === 'STARTED'; },
-        STARTEDEARLY : (params: any) => { return params.data.Status === 'STARTED_EARLY'; },
-        STARTEDLATE : (params: any) => { return params.data.Status === 'STARTED_LATE'; },
-        STARTEDRUNNINGOVERTIME : (params: any) => { return params.data.Status === 'STARTED_RUNNING_OVERTIME'; },
-        COMPLETED : (params: any) => { return params.data.Status === 'COMPLETED'; },
-        COMPLETEDEARLY : (params: any) => { return params.data.Status === 'COMPLETED_EARLY'; },
-        COMPLETEDLATE : (params: any) => { return params.data.Status === 'COMPLETED_LATE'; },
-        COMPLETEDDQMISSUES : (params: any) => { return params.data.Status === 'COMPLETED_DQM_ISSUES'; },
+        SCHEDULED: (params: any) => { return params.data.Status === 'SCHEDULED'; },
+        NOTSTARTED: (params: any) => { return params.data.Status === 'NOT_STARTED'; },
+        STARTED: (params: any) => { return params.data.Status === 'STARTED'; },
+        STARTEDEARLY: (params: any) => { return params.data.Status === 'STARTED_EARLY'; },
+        STARTEDLATE: (params: any) => { return params.data.Status === 'STARTED_LATE'; },
+        STARTEDRUNNINGOVERTIME: (params: any) => { return params.data.Status === 'STARTED_RUNNING_OVERTIME'; },
+        COMPLETED: (params: any) => { return params.data.Status === 'COMPLETED'; },
+        COMPLETEDEARLY: (params: any) => { return params.data.Status === 'COMPLETED_EARLY'; },
+        COMPLETEDLATE: (params: any) => { return params.data.Status === 'COMPLETED_LATE'; },
+        COMPLETEDDQMISSUES: (params: any) => { return params.data.Status === 'COMPLETED_DQM_ISSUES'; },
 
         BLINK: (params: any) => {
-          if (params.data.BlinkBeforeStart < 0){
+          if (params.data.BlinkBeforeStart < 0) {
             return false;
           }
-        // tslint:disable-next-line:max-line-length
-        return (params.data.Status === 'SCHEDULED' && moment(params.data.ScheduledStart).diff(moment(), 'm') < params.data.BlinkBeforeStart);
+          // tslint:disable-next-line:max-line-length
+          return (params.data.Status === 'SCHEDULED' && moment(params.data.ScheduledStart).diff(moment(), 'm') < params.data.BlinkBeforeStart);
         },
       }
     },
@@ -294,6 +294,12 @@ export class AppComponent implements OnInit {
     });
     this.hubService.connectionError.subscribe((message: string) => {
       that.status = 'Disconnected';
+      that.globals.userStatus = 'Logged Out';
+      that.rowData = [];
+      that.numRows = 0;
+      this.lastUpdate = moment().format('HH:mm:ss');
+      const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Connection to host lost', 'Please try reload this page', 'sm');
+      that.zone.run(() => { });
     });
     this.hubService.connectionEstablishing.subscribe((message: string) => {
       that.status = 'Connecting';
@@ -344,16 +350,15 @@ export class AppComponent implements OnInit {
       that.gridColumnApi.setColumnsVisible(['Ready'], enable[0]);
       that.gridColumnApi.setColumnsVisible(['ReadyEdit'], false);
 
-      // Show the  logon buttons
-      if (enable[1]) {
-        $('#loginBtn').show(0);
-        $('#logoutBtn').show(0);
-        that.openDialog();
-      }
       // Show the range selector
-      if (enable[2]) {
+      if (enable[1]) {
         that.showDateRange = true;
       }
+
+      $('#loginBtn').show(0);
+      $('#logoutBtn').show(0);
+      that.openDialog();
+
     });
   }
   onGridReady(params): void {
@@ -591,13 +596,13 @@ export class AppComponent implements OnInit {
     this.hubService.getTows(this.offsetFrom, this.offsetTo);
   }
 
-  rangeDateFromSet(evt): any{
+  rangeDateFromSet(evt): any {
     const ms = moment(this.rangeDateFrom, 'YYYY-MM-DD');
     this.rangeDateTo = ms.add(31, 'days').format('YYYY-MM-DD');
   }
-  rangeDateToSet(evt): any{
-   // const ms = moment(this.rangeDateTo, 'YYYY-MM-DD');
-   // this.rangeDateFrom = ms.add(-3, 'days').format('YYYY-MM-DD');
+  rangeDateToSet(evt): any {
+    // const ms = moment(this.rangeDateTo, 'YYYY-MM-DD');
+    // this.rangeDateFrom = ms.add(-3, 'days').format('YYYY-MM-DD');
   }
   setSelectedDateRange(): any {
 
@@ -610,18 +615,18 @@ export class AppComponent implements OnInit {
     const ms = moment(this.rangeDateFrom, 'YYYY-MM-DD');
     const me = moment(this.rangeDateTo, 'YYYY-MM-DD');
 
-    if ( !ms.isValid() || !ms.isValid()){
+    if (!ms.isValid() || !ms.isValid()) {
       const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker', 'Warning: Invalid date range', 'Please select From and To dates', 'sm');
       return;
     }
 
     const rge = me.diff(ms, 'days');
-    if (rge > 31){
+    if (rge > 31) {
       const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker', 'Warning: Invalid date range', 'Maximum search range is 31 days', 'sm');
       return;
     }
 
-    if ( ms.isAfter(me)){
+    if (ms.isAfter(me)) {
       // tslint:disable-next-line:max-line-length
       const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker', 'Warning: Invalid date range', 'From date is after To date', 'sm');
       return;
@@ -669,11 +674,11 @@ export class AppComponent implements OnInit {
       let depFlt = '';
       let depTime = '';
 
-      if (rowData.Arrival !== null && rowData.Arrival !== '' && typeof(rowData.Arrival) !== 'undefined' && rowData.Arrival !== '-'){
+      if (rowData.Arrival !== null && rowData.Arrival !== '' && typeof (rowData.Arrival) !== 'undefined' && rowData.Arrival !== '-') {
         arrTime = rowData.Arrival.split(' ')[1];
         arrFlt = rowData.Arrival.split(' ')[0];
       }
-      if (rowData.Departure !== null && rowData.Departure !== '' && typeof(rowData.Departure) !== 'undefined' && rowData.Departure !== '-'){
+      if (rowData.Departure !== null && rowData.Departure !== '' && typeof (rowData.Departure) !== 'undefined' && rowData.Departure !== '-') {
         depTime = rowData.Departure.split(' ')[1];
         depFlt = rowData.Departure.split(' ')[0];
       }
@@ -689,10 +694,10 @@ export class AppComponent implements OnInit {
       cb += rowData.ActualEnd + ',';
       cb += rowData.AircraftRegistration + ',';
       cb += rowData.AircraftType + ',';
-      cb += arrFlt  + ',';
-      cb += arrTime  + ',';
-      cb += depFlt  + ',';
-      cb += depTime  + '\n';
+      cb += arrFlt + ',';
+      cb += arrTime + ',';
+      cb += depFlt + ',';
+      cb += depTime + '\n';
 
     }
 
@@ -704,9 +709,9 @@ export class AppComponent implements OnInit {
 
     const that = this;
     // tslint:disable-next-line:max-line-length
-    const modalRef = this.modalService.open(LoginDialogComponent, { centered: true, size: 'sm', backdrop: 'static'});
+    const modalRef = this.modalService.open(LoginDialogComponent, { centered: true, size: 'sm', backdrop: 'static' });
     modalRef.result.then((result) => {
-      if (result.login){
+      if (result.login) {
         that.hubService.login(result.id, result.token);
       } else {
         that.openDialog();
@@ -719,7 +724,7 @@ export class AppComponent implements OnInit {
   }
 
   about(): void {
-    const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker', 'AMS Tow Tracker - SITA MEIA Integration Team', 'Version 0.95', 'sm');
+    const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker', 'AMS Tow Tracker - SITA MEIA Integration Team', 'Version 0.96', 'sm');
   }
 }
 
@@ -781,39 +786,39 @@ function getYearCellEditor(): any {
         } else {
           that.value = moment($('#editorDate').val() + 'T' + $('#editorTime').val() + 'Z').format('YYYY-MM-DDTHH:mm:ssZ');
         }
-        if (that.field === 'ActualEnd') {
-          if (that.data.ActualStart === '-') {
-            alert('Please set Actual Start first');
-            that.value = null;
-          } else {
-            try {
-              if (moment(that.value).isBefore(that.data.ActualStart)) {
-                alert('Actual End cannot be before Actual Start');
-                that.value = null;
-              }
-            } catch (ex) {
-              alert('Please set Actual Start first');
-              that.value = null;
-            }
-          }
-        }
+        // if (that.field === 'ActualEnd') {
+        //   if (that.data.ActualStart === '-') {
+        //     alert('Please set Actual Start first');
+        //     params.stopEditing(false);
+        //   } else {
+        //     try {
+        //       if (moment(that.value).isBefore(that.data.ActualStart)) {
+        //         alert('Actual End cannot be before Actual Start');
+        //         params.stopEditing(false);
+        //       }
+        //     } catch (ex) {
+        //       alert('Please set Actual Start first');
+        //       params.stopEditing(false);
+        //     }
+        //   }
+        // }
 
-        if (that.field === 'ActualStart' && that.data.ActualEnd !== '-') {
-          if (that.data.ActualStart === '-') {
-            alert('Please set Actual Start first');
-            that.value = null;
-          } else {
-            try {
-              if (moment(that.value).isAfter(that.data.ActualEnd)) {
-                alert('Actual Start cannot be after Actual End');
-                that.value = null;
-              }
-            } catch (ex) {
-              alert('Actual Start cannot be after Actual End');
-              that.value = null;
-            }
-          }
-        }
+        //       if (that.field === 'ActualStart' && that.data.ActualEnd !== '-') {
+        //         // if (that.data.ActualStart === '-') {
+        //         //   alert('Please set Actual Start first');
+        //         //   that.value = null;
+        //         // } else {
+        //           try {
+        //             if (moment(that.value).isAfter(that.data.ActualEnd)) {
+        //               alert('Actual Start cannot be after Actual End');
+        //               params.stopEditing(true);
+        //             }
+        //           } catch (ex) {
+        //             alert('Actual Start cannot be after Actual End');
+        //             params.stopEditing(true);
+        //           }
+        //  //       }
+        //       }
 
         params.stopEditing();
       });

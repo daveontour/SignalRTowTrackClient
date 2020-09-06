@@ -11,7 +11,7 @@ import { NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
       <p>{{message}}</p>
       <p>{{message2}}</p>
     </div>
-    <div class="modal-footer">
+    <div *ngIf="showFooter" class="modal-footer">
     <button type="button" class="btn btn-outline-dark" (click)="button1Click()">{{button1}}</button>
     <button type="button" [ngClass]="{'btn':true, 'btn-outline-dark':true, 'd-none': !showButton2}"
      (click)="button2Click()">{{button2}}</button>
@@ -27,6 +27,7 @@ export class GenericAlertComponent {
   @Input() showButton2 = false;
   @Input() param1: any;
   @Input() param2: any;
+  @Input() showFooter: boolean;
   @Input() button1Fn = function(p: any) {};
   @Input() button2Fn = function(p: any) {};
 

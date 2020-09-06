@@ -9,12 +9,11 @@ import { NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
     </div>
     <div class="modal-body" style="color:black" align="center">
     <p>Requested search range is outside the current repository range</p>
-    <p>Proceeding may take a long time</p>
+    <p>Unable to complete search</p>
     <p>Current Range: {{param1}} to {{param2}}<br/>Requested Range: {{param3}} to {{param4}}</p>
     </div>
     <div class="modal-footer">
     <button type="button" class="btn btn-outline-dark" (click)="button1Click()">Cancel</button>
-    <button type="button" class="btn btn-outline-dark" (click)="button2Click()">Proceed</button>
     </div>
   `
 })
@@ -31,7 +30,7 @@ export class ProceedLoadDialogComponent {
   button1Click(): any {
      this.activeModal.close({proceed: false});
   }
-  button2Click(): any  {
-     this.activeModal.close({proceed: true});
-    }
+  // button2Click(): any  {
+  //    this.activeModal.close({proceed: true});
+  //   }
 }
