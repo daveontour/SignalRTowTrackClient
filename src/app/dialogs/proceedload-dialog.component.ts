@@ -30,7 +30,5 @@ export class ProceedLoadDialogComponent {
   button1Click(): any {
      this.activeModal.close({proceed: false});
   }
-  // button2Click(): any  {
-  //    this.activeModal.close({proceed: true});
-  //   }
+
 }

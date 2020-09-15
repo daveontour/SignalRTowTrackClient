@@ -13,8 +13,6 @@ import { NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
     </div>
     <div *ngIf="showFooter" class="modal-footer">
     <button type="button" class="btn btn-outline-dark" (click)="button1Click()">{{button1}}</button>
-    <button type="button" [ngClass]="{'btn':true, 'btn-outline-dark':true, 'd-none': !showButton2}"
-     (click)="button2Click()">{{button2}}</button>
     </div>
   `
 })
@@ -28,17 +26,11 @@ export class GenericAlertComponent {
   @Input() param1: any;
   @Input() param2: any;
   @Input() showFooter: boolean;
-  @Input() button1Fn = function(p: any) {};
-  @Input() button2Fn = function(p: any) {};
+
 
   constructor(public activeModal: NgbActiveModal, private modalService: NgbModal) {}
 
   button1Click(): any {
      this.activeModal.close();
-     this.button1Fn(this.param1);
   }
-  button2Click(): any {
-     this.activeModal.close();
-     this.button2Fn(this.param2);
-    }
 }

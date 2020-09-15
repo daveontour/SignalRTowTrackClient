@@ -5,7 +5,6 @@
 <div *ngIf="showDateRange">Select Mode
   <select  name="modeType" id="modeType" style="height:25px;width:125px; font-size: 12px;" [(ngModel)]='selectMode' (change)='modeSelectChange()'>
     <option value="Monitor" selected="selected">Monitor</option>
- <!--   <option value="FlightReview">Tow for Flights Review</option> -->
     <option value="TowReview">Tows by Day Review</option>
   </select>
 </div>
@@ -14,6 +13,10 @@
 
       <label>Scheduled Tow Start From:</label>
       <select name="from" [(ngModel)]='offsetFrom' style="font-size: 12px;">
+        <option value="-720">-12 hours</option>
+        <option value="-600">-10 hours</option>
+        <option value="-480">-8 hours</option>
+        <option value="-360">-6 hours</option>
         <option value="-300" selected="selected">-5 hours</option>
         <option value="-240">-4 hours</option>
         <option value="-180">-3 hours</option>
@@ -36,6 +39,9 @@
         <option value="240" selected="selected">+4 hour</option>
         <option value="300">+5 hour</option>
         <option value="360">+6 hour</option>
+        <option value="480">+8 hour</option>
+        <option value="600">+10 hour</option>
+        <option value="720">+12 hour</option>
       </select>
       <label style="margin-left: 15px;">Show Completed Tows:</label>
       <input type="checkbox" [(ngModel)]='showCompleted' (change)="setCurrentRange()">
@@ -66,6 +72,7 @@
     <option value="UTC">UTC Time</option>
   </select>
 
+  <!-- The Menu on the right of the top line  -->
     <button mat-icon-button [matMenuTriggerFor]="menu"  style="margin-left:auto; margin-right: 20px; background-color: #181D1F;">
       <mat-icon style="color:whitesmoke; background-color: #181D1F;">more_vert</mat-icon>
     </button>
@@ -82,13 +89,14 @@
 </div>
 
 
-
+<!--  The core of the page is the Towing Grid implementation of ag-grid component  -->
 <ag-grid-angular style="width: 100%;  height: calc(100vh - 75px);" class="ag-theme-alpine-dark" [rowData]="rowData"
   [columnDefs]="columnDefs" (gridReady)="onGridReady($event)" [animateRows]="true" [getRowNodeId]="getRowNodeId"
   [defaultColDef]="defaultColDef" [tooltipShowDelay]="tooltipShowDelay" [frameworkComponents]="frameworkComponents"
-  [components]="components" (cellValueChanged)="onCellValueChanged($event)"
-  [overlayLoadingTemplate]="overlayLoadingTemplate">
+  [components]="components" (cellValueChanged)="onCellValueChanged($event)" [overlayLoadingTemplate]="overlayLoadingTemplate">
 </ag-grid-angular>
+
+<!-- The bottom status line -->
 <div style="height:20px;align-items: center;display: flex; flex-direction: row;padding-left: 10px">
   <span style="margin-left: 10px; font-size: 14px">Status:</span>
   <span style="margin-left: 10px; font-size: 14px" [ngClass]="status">{{status}}</span>
@@ -100,7 +108,7 @@
   <span style="margin-left: 10px; font-size: 14px;color:cadetblue">{{globals.timeZone}}</span>
   <span style="margin-left: 10px; font-size: 14px">User Status:</span>
   <span style="margin-left: 10px; font-size: 14px;"  [ngClass]="{'LoggedIn': globals.userStatus =='Logged In','LoggedOut': globals.userStatus =='Logged Out' || globals.userStatus =='No Access' ,'NoEdit': globals.userStatus =='No Edit Access'}">{{globals.userStatus}}</span>
-  <span style="margin-left: 30px; font-size: 14px;color: orange;">Version 0.96</span>  
+  <span style="margin-left: 30px; font-size: 14px;color: orange;">Version {{version}}</span>  
 
 </div>
 

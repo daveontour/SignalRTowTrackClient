@@ -1,20 +1,16 @@
+import { Component, OnInit, TemplateRef, Input } from '@angular/core';
+import { ChangeDetectorRef } from '@angular/core';
+
+import { NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import { NgZone } from '@angular/core';
+import * as moment from 'moment';
+
 import { SignalRService } from './services/signalr.service';
 import { GlobalService } from './services/global.service';
-import { Component, OnInit, TemplateRef, Input } from '@angular/core';
-
-import * as moment from 'moment';
-import { HttpClient } from '@angular/common/http';
+import { LoginDialogComponent } from './dialogs/login-dialog.component';
 import { CustomTooltip } from './tooltips/custom-time-tooltip.component';
 import { CustomPlanTooltip } from './tooltips/custom-plan-tooltip.component';
 import { CustomStandTooltip } from './tooltips/custom-stand-tooltip.component';
-import { ChangeDetectorRef } from '@angular/core';
-
-import { MatDialog } from '@angular/material/dialog';
-import { LoginDialogComponent } from './dialogs/login-dialog.component';
-import { data } from 'jquery';
-import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
-import { NgZone } from '@angular/core';
-
 
 @Component({
   selector: 'app-root',
@@ -22,7 +18,9 @@ import { NgZone } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+  public static staticGlobal: any;
   @Input() content: TemplateRef<string>;
+
   public closeResult = '';
 
   public displayMode = 'Monitor';
@@ -30,6 +28,8 @@ export class AppComponent implements OnInit {
   public getRowNodeId: any;
   public offsetFrom = -300;
   public offsetTo = 240;
+
+  public version = '1.0.0';
 
   public timeFormat = 'Local';
 
@@ -52,6 +52,7 @@ export class AppComponent implements OnInit {
   public selectMode = 'Monitor';
   public loadingStatus = '';
 
+
   public lastUpdate: string;
   public gridApi: any;
   public gridColumnApi: any;
@@ -59,7 +60,8 @@ export class AppComponent implements OnInit {
   public status = 'Connecting';
   public components: any;
   public enableReady = false;
-  public overlayLoadingTemplate = '<span class="ag-overlay-loading-center">Please log in to load the tows</span>';
+  public requireLoginForViewOnly: boolean;
+  public overlayLoadingTemplate = '<span class="ag-overlay-loading-center">Login to load the tow events</span>';
   public columnDefs = [
     { headerName: 'A/C Rego', field: 'AircraftRegistration', tooltipComponent: 'customPlanTooltip', tooltipField: 'TowingID' },
     { headerName: 'A/C Type', field: 'AircraftType', tooltipComponent: 'customPlanTooltip', tooltipField: 'TowingID' },
@@ -67,16 +69,16 @@ export class AppComponent implements OnInit {
     {
       headerName: 'Status', field: 'Status', sortable: true, flex: 3, comparator: this.statusComparator, valueGetter: this.statusGetter,
       cellClassRules: {
-        SCHEDULED: (params: any) => { return params.data.Status === 'SCHEDULED'; },
-        NOTSTARTED: (params: any) => { return params.data.Status === 'NOT_STARTED'; },
-        STARTED: (params: any) => { return params.data.Status === 'STARTED'; },
-        STARTEDEARLY: (params: any) => { return params.data.Status === 'STARTED_EARLY'; },
-        STARTEDLATE: (params: any) => { return params.data.Status === 'STARTED_LATE'; },
-        STARTEDRUNNINGOVERTIME: (params: any) => { return params.data.Status === 'STARTED_RUNNING_OVERTIME'; },
-        COMPLETED: (params: any) => { return params.data.Status === 'COMPLETED'; },
-        COMPLETEDEARLY: (params: any) => { return params.data.Status === 'COMPLETED_EARLY'; },
-        COMPLETEDLATE: (params: any) => { return params.data.Status === 'COMPLETED_LATE'; },
-        COMPLETEDDQMISSUES: (params: any) => { return params.data.Status === 'COMPLETED_DQM_ISSUES'; },
+        SCHEDULED: (params: any) => params.data.Status === 'SCHEDULED',
+        NOTSTARTED: (params: any) => params.data.Status === 'NOT_STARTED',
+        STARTED: (params: any) => params.data.Status === 'STARTED',
+        STARTEDEARLY: (params: any) => params.data.Status === 'STARTED_EARLY',
+        STARTEDLATE: (params: any) => params.data.Status === 'STARTED_LATE',
+        STARTEDRUNNINGOVERTIME: (params: any) => params.data.Status === 'STARTED_RUNNING_OVERTIME',
+        COMPLETED: (params: any) => params.data.Status === 'COMPLETED',
+        COMPLETEDEARLY: (params: any) => params.data.Status === 'COMPLETED_EARLY',
+        COMPLETEDLATE: (params: any) => params.data.Status === 'COMPLETED_LATE',
+        COMPLETEDDQMISSUES: (params: any) => params.data.Status === 'COMPLETED_DQM_ISSUES',
 
         BLINK: (params: any) => {
           if (params.data.BlinkBeforeStart < 0) {
@@ -96,10 +98,10 @@ export class AppComponent implements OnInit {
     // tslint:disable-next-line:max-line-length
     { headerName: 'End', field: 'ScheduledEnd', tooltipComponent: 'customTooltip', tooltipField: 'ScheduledStart', sortable: true, valueFormatter: this.timeFormatter, comparator: this.timeComparator },
     // tslint:disable-next-line:max-line-length
-    { headerName: 'Act. Start', field: 'ActualStart', colId: 'ActualStartEdit', tooltipComponent: 'customTooltip', tooltipField: 'ScheduledStart', editable: true, cellEditor: 'yearCellEditor', valueFormatter: this.timeFormatter, hide: true },
+    { headerName: 'Act. Start', field: 'ActualStart', colId: 'ActualStartEdit', tooltipComponent: 'customTooltip', tooltipField: 'ScheduledStart', editable: true, cellEditor: 'dateCellEditor', valueFormatter: this.timeFormatter, hide: true },
     { headerName: 'Act. Start', field: 'ActualStart', colId: 'ActualStart', tooltipComponent: 'customTooltip', tooltipField: 'ScheduledStart', valueFormatter: this.timeFormatter },
     // tslint:disable-next-line:max-line-length
-    { headerName: 'Act. End', field: 'ActualEnd', colId: 'ActualEndEdit', tooltipComponent: 'customTooltip', tooltipField: 'ScheduledStart', valueFormatter: this.timeFormatter, editable: true, cellEditor: 'yearCellEditor', hide: true },
+    { headerName: 'Act. End', field: 'ActualEnd', colId: 'ActualEndEdit', tooltipComponent: 'customTooltip', tooltipField: 'ScheduledStart', valueFormatter: this.timeFormatter, editable: true, cellEditor: 'dateCellEditor', hide: true },
     // tslint:disable-next-line:max-line-length
     { headerName: 'Act. End', field: 'ActualEnd', colId: 'ActualEnd', tooltipComponent: 'customTooltip', tooltipField: 'ScheduledStart', valueFormatter: this.timeFormatter },
     { headerName: 'Flights', field: 'Flights', tooltipField: 'TowingID', flex: 3, tooltipComponent: 'customPlanTooltip', }
@@ -118,21 +120,25 @@ export class AppComponent implements OnInit {
 
   constructor(
     private zone: NgZone,
-    private http: HttpClient,
     public globals: GlobalService,
     public hubService: SignalRService,
     private ref: ChangeDetectorRef,
-    private dialog: MatDialog,
     private modalService: NgbModal
 
   ) {
 
+    AppComponent.staticGlobal = globals;
     const that = this;
 
-    // Set it so the update is on the minute
+    this.components = { dateCellEditor: getDateCellEditor(), readyCellEditor: getTowReadyEditor() };
+    this.getRowNodeId = (d: any) => {
+      return d.TowingID;
+    };
+    this.frameworkComponents = { customTooltip: CustomTooltip, customPlanTooltip: CustomPlanTooltip,
+       customStandTooltip: CustomStandTooltip };
+
+
     const sec = ((60 - moment().second()) + 5) * 1000;
-
-
     setTimeout(() => {
       that.minuteTick();
       setInterval(() => {
@@ -140,17 +146,12 @@ export class AppComponent implements OnInit {
       }, 60000);
     }, sec);
 
-    this.getRowNodeId = (d: any) => {
-      return d.TowingID;
-    };
-    // tslint:disable-next-line:max-line-length
-    this.frameworkComponents = { customTooltip: CustomTooltip, customPlanTooltip: CustomPlanTooltip, customStandTooltip: CustomStandTooltip };
+
     this.hubService.connectionEstablished.subscribe((connected: boolean) => {
       this.status = 'Connected';
-      this.hubService.checkEnableReady();
+      this.hubService.getConfig();
     });
 
-    this.components = { yearCellEditor: getYearCellEditor(), readyCellEditor: getTowReadyEditor() };
   }
 
   minuteTick(): any {
@@ -265,6 +266,7 @@ export class AppComponent implements OnInit {
     ];
     this.gridApi.setSortModel(sort);
   }
+
   logout(): any {
     this.rowData = [];
     this.numRows = 0;
@@ -274,7 +276,6 @@ export class AppComponent implements OnInit {
     this.loadingStatus = '';
     this.hubService.logout();
   }
-
 
   // What to do with all the ecents coming from the host
   subscribeToEvents(): void {
@@ -333,7 +334,9 @@ export class AppComponent implements OnInit {
     });
 
     this.hubService.loggedOut.subscribe((allow: boolean) => {
-      that.openDialog();
+      if (that.requireLoginForViewOnly) {
+        that.openDialog();
+      }
       that.rowData = [];
       that.disableLogout = true;
       that.disableLogin = false;
@@ -350,14 +353,21 @@ export class AppComponent implements OnInit {
       that.gridColumnApi.setColumnsVisible(['Ready'], enable[0]);
       that.gridColumnApi.setColumnsVisible(['ReadyEdit'], false);
 
+      that.requireLoginForViewOnly = enable[2];
+
       // Show the range selector
       if (enable[1]) {
         that.showDateRange = true;
       }
 
-      $('#loginBtn').show(0);
-      $('#logoutBtn').show(0);
-      that.openDialog();
+      if (that.requireLoginForViewOnly) {
+        $('#loginBtn').show(0);
+        $('#logoutBtn').show(0);
+        that.openDialog();
+      } else {
+        that.disableLogin = false;
+        that.hubService.getTows(that.offsetFrom, that.offsetTo);
+      }
 
     });
   }
@@ -369,20 +379,28 @@ export class AppComponent implements OnInit {
   onCellValueChanged(evt: any): void {
 
     if (evt.column.colId === 'ActualEndEdit') {
+      if (moment().isBefore(moment(evt.newValue))) {
+        alert('Cannot Enter Future Times');
+        return;
+      }
       this.hubService.updateActualEnd(evt.newValue, evt.data.TowingID);
     }
     if (evt.column.colId === 'ActualStartEdit') {
+      if (moment().isBefore(moment(evt.newValue))) {
+        alert('Cannot Enter Future Times');
+        return;
+      }
       this.hubService.updateActualStart(evt.newValue, evt.data.TowingID);
     }
     if (evt.column.colId === 'ReadyEdit') {
       this.hubService.updateReadyState(evt.newValue, evt.data.TowingID);
     }
   }
-  loadGrid(data: any): void {
+  loadGrid(rowsdata: any): void {
     const that = this;
     const rowsToAdd = [];
 
-    data.forEach(element => {
+    rowsdata.forEach(element => {
       try {
         element = that.transformRow(element);
 
@@ -407,13 +425,7 @@ export class AppComponent implements OnInit {
     this.ref.markForCheck();
   }
 
-
   updateGridRow(updatedTow: any): void {
-
-    // // Only process updates in Monitor Mode
-    // if (this.selectMode !== 'Monitor') {
-    //   return;
-    // }
 
     if (this.checkAddRow(updatedTow)) {
       updatedTow = this.transformRow(updatedTow);
@@ -548,7 +560,19 @@ export class AppComponent implements OnInit {
       return false;
     }
     if (this.selectMode !== 'Monitor') {
-      return true;
+      const towTypes = $('#towTypes').val();
+      if (towTypes === 'All') {
+        return true;
+      }
+      // tslint:disable-next-line:max-line-length
+      if (towTypes === 'Incomplete' && !(updatedTow.Status === 'COMPLETED' || updatedTow.Status === 'COMPLETED_EARLY' || updatedTow.Status === 'COMPLETED_LATE' || updatedTow.Status === 'COMPLETED_DQM_ISSUES')) {
+        return true;
+      }
+      if (towTypes === 'Complete' && (updatedTow.Status === 'COMPLETED' || updatedTow.Status === 'COMPLETED_EARLY' || updatedTow.Status === 'COMPLETED_LATE' || updatedTow.Status === 'COMPLETED_DQM_ISSUES')) {
+        return true;
+      }
+
+      return false;
     }
 
     if (!this.showCompleted && updatedTow.Status === 'COMPLETED') {
@@ -562,7 +586,6 @@ export class AppComponent implements OnInit {
     }
     return true;
   }
-
 
   modeSelectChange(): any {
     this.rowData = [];
@@ -587,7 +610,9 @@ export class AppComponent implements OnInit {
 
   }
   setCurrentRange(): any {
-    this.loadingStatus = 'Loading Data';
+    this.rowData = [];
+    this.zone.run(() => { });
+
     this.globals.rangeMode = 'offset';
     this.displayMode = 'Monitor';
 
@@ -601,8 +626,7 @@ export class AppComponent implements OnInit {
     this.rangeDateTo = ms.add(31, 'days').format('YYYY-MM-DD');
   }
   rangeDateToSet(evt): any {
-    // const ms = moment(this.rangeDateTo, 'YYYY-MM-DD');
-    // this.rangeDateFrom = ms.add(-3, 'days').format('YYYY-MM-DD');
+    // Just a place holder in case
   }
   setSelectedDateRange(): any {
 
@@ -613,7 +637,7 @@ export class AppComponent implements OnInit {
     this.displayMode = 'Review';
 
     const ms = moment(this.rangeDateFrom, 'YYYY-MM-DD');
-    const me = moment(this.rangeDateTo, 'YYYY-MM-DD');
+    let me = moment(this.rangeDateTo, 'YYYY-MM-DD');
 
     if (!ms.isValid() || !ms.isValid()) {
       const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker', 'Warning: Invalid date range', 'Please select From and To dates', 'sm');
@@ -632,6 +656,8 @@ export class AppComponent implements OnInit {
       return;
     }
 
+
+    me = me.add(1, 'days');
 
     this.globals.offsetFrom = ms.diff(moment(), 'm');
     this.globals.offsetTo = me.diff(moment(), 'm');
@@ -664,7 +690,7 @@ export class AppComponent implements OnInit {
   }
 
   getCSVData(): string {
-    let cb = 'TowingId,Status,ReadyState,FromStand,ToStand,ScheduledStart,ScheduledEnd,ActualStart,ActualEnd,AircraftRegistration,AircraftType,ArrivalFlight,SIBT,DepartureFlight,SOBT\n';
+    let cb = 'AircraftRegistration,AircraftType,TowingId,Status,ReadyState,FromStand,ToStand,ScheduledStart,ScheduledEnd,ActualStart,ActualEnd,ArrivalFlight,SIBT,DepartureFlight,SOBT\n';
 
     for (let i = 0; i < this.numRows; i++) {
       const rowData = this.gridApi.getDisplayedRowAtIndex(i).data;
@@ -678,11 +704,14 @@ export class AppComponent implements OnInit {
         arrTime = rowData.Arrival.split(' ')[1];
         arrFlt = rowData.Arrival.split(' ')[0];
       }
+      // tslint:disable-next-line:max-line-length
       if (rowData.Departure !== null && rowData.Departure !== '' && typeof (rowData.Departure) !== 'undefined' && rowData.Departure !== '-') {
         depTime = rowData.Departure.split(' ')[1];
         depFlt = rowData.Departure.split(' ')[0];
       }
 
+      cb += rowData.AircraftRegistration + ',';
+      cb += rowData.AircraftType + ',';
       cb += rowData.TowingID + ',';
       cb += rowData.Status + ',';
       cb += rowData.Ready + ',';
@@ -692,8 +721,6 @@ export class AppComponent implements OnInit {
       cb += rowData.ScheduledEnd + ',';
       cb += rowData.ActualStart + ',';
       cb += rowData.ActualEnd + ',';
-      cb += rowData.AircraftRegistration + ',';
-      cb += rowData.AircraftType + ',';
       cb += arrFlt + ',';
       cb += arrTime + ',';
       cb += depFlt + ',';
@@ -708,7 +735,6 @@ export class AppComponent implements OnInit {
   openDialog(): any {
 
     const that = this;
-    // tslint:disable-next-line:max-line-length
     const modalRef = this.modalService.open(LoginDialogComponent, { centered: true, size: 'sm', backdrop: 'static' });
     modalRef.result.then((result) => {
       if (result.login) {
@@ -724,30 +750,31 @@ export class AppComponent implements OnInit {
   }
 
   about(): void {
-    const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker', 'AMS Tow Tracker - SITA MEIA Integration Team', 'Version 0.96', 'sm');
+    const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker',
+    'AMS Tow Tracker - SITA MEIA Integration Team', 'Version ' + this.version, 'sm');
   }
 }
 
-function getYearCellEditor(): any {
-  function YearCellEditor(): any { }
-  YearCellEditor.prototype.getGui = function (): any {
+function getDateCellEditor(): any {
+  function DateCellEditor(): any { }
+  DateCellEditor.prototype.getGui = function(): any {
     return this.eGui;
   };
-  YearCellEditor.prototype.getValue = function (): any {
+  DateCellEditor.prototype.getValue = function(): any {
     return this.value;
   };
-  YearCellEditor.prototype.isPopup = function (): any {
+  // tslint:disable-next-line:only-arrow-functions
+  DateCellEditor.prototype.isPopup = function(): any {
     return true;
   };
-  YearCellEditor.prototype.init = function (params: any): any {
-
+  DateCellEditor.prototype.init = function(params: any): any {
     this.value = params.value;
     this.data = params.data;
     this.field = params.colDef.field;
     const tempElement = document.createElement('div');
 
-    let dt;
-    let tt;
+    let dt: any;
+    let tt: any;
 
     if (this.data.PageDateFormat === 'Local') {
       dt = moment().format('YYYY-MM-DD');
@@ -781,46 +808,19 @@ function getYearCellEditor(): any {
     tempElement
       .querySelector('#btOK')
       .addEventListener('click', () => {
+
+        let newValue = moment($('#editorDate').val() + 'T' + $('#editorTime').val() + 'Z').format('YYYY-MM-DDTHH:mm:ssZ');
         if (that.data.PageDateFormat === 'Local') {
-          that.value = moment($('#editorDate').val() + 'T' + $('#editorTime').val()).format('YYYY-MM-DDTHH:mm:ss');
-        } else {
-          that.value = moment($('#editorDate').val() + 'T' + $('#editorTime').val() + 'Z').format('YYYY-MM-DDTHH:mm:ssZ');
+          newValue = moment($('#editorDate').val() + 'T' + $('#editorTime').val()).format('YYYY-MM-DDTHH:mm:ss');
         }
-        // if (that.field === 'ActualEnd') {
-        //   if (that.data.ActualStart === '-') {
-        //     alert('Please set Actual Start first');
-        //     params.stopEditing(false);
-        //   } else {
-        //     try {
-        //       if (moment(that.value).isBefore(that.data.ActualStart)) {
-        //         alert('Actual End cannot be before Actual Start');
-        //         params.stopEditing(false);
-        //       }
-        //     } catch (ex) {
-        //       alert('Please set Actual Start first');
-        //       params.stopEditing(false);
-        //     }
-        //   }
-        // }
 
-        //       if (that.field === 'ActualStart' && that.data.ActualEnd !== '-') {
-        //         // if (that.data.ActualStart === '-') {
-        //         //   alert('Please set Actual Start first');
-        //         //   that.value = null;
-        //         // } else {
-        //           try {
-        //             if (moment(that.value).isAfter(that.data.ActualEnd)) {
-        //               alert('Actual Start cannot be after Actual End');
-        //               params.stopEditing(true);
-        //             }
-        //           } catch (ex) {
-        //             alert('Actual Start cannot be after Actual End');
-        //             params.stopEditing(true);
-        //           }
-        //  //       }
-        //       }
-
-        params.stopEditing();
+        if (moment(newValue).isAfter(moment())) {
+          AppComponent.staticGlobal.openModalAlert('Edit Actual Time', 'Warning: Actual time cannot be set in the future. Edit ignored', '', 'sm');
+          params.stopEditing();
+        } else {
+          that.value = newValue;
+          params.stopEditing();
+        }
       });
     tempElement
       .querySelector('#btClear')
@@ -836,21 +836,22 @@ function getYearCellEditor(): any {
 
     this.eGui = tempElement.firstChild;
   };
-  return YearCellEditor;
+  return DateCellEditor;
 }
 
 function getTowReadyEditor(): any {
   function TowReadyCellEditor(): any { }
-  TowReadyCellEditor.prototype.getGui = function (): any {
+  TowReadyCellEditor.prototype.getGui = function(): any {
     return this.eGui;
   };
-  TowReadyCellEditor.prototype.getValue = function (): any {
+  TowReadyCellEditor.prototype.getValue = function(): any {
     return this.value;
   };
-  TowReadyCellEditor.prototype.isPopup = function (): any {
+  // tslint:disable-next-line:only-arrow-functions
+  TowReadyCellEditor.prototype.isPopup = function(): any {
     return true;
   };
-  TowReadyCellEditor.prototype.init = function (params: any): any {
+  TowReadyCellEditor.prototype.init = function(params: any): any {
 
     this.value = params.value;
     this.data = params.data;

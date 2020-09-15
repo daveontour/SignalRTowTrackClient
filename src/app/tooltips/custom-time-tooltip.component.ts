@@ -1,7 +1,6 @@
 
 import { Component} from '@angular/core';
 import { ITooltipAngularComp } from 'ag-grid-angular/public-api';
-import { data } from 'jquery';
 import * as moment from 'moment';
 
 
