@@ -19,6 +19,8 @@ import { CustomStandTooltip } from './tooltips/custom-stand-tooltip.component';
 })
 export class AppComponent implements OnInit {
   public static staticGlobal: any;
+  public static TurboStartUp = true;
+
   @Input() content: TemplateRef<string>;
 
   public closeResult = '';
@@ -26,10 +28,10 @@ export class AppComponent implements OnInit {
   public displayMode = 'Monitor';
   public rowData: any;
   public getRowNodeId: any;
-  public offsetFrom = -300;
-  public offsetTo = 240;
+  public offsetFrom = -720;
+  public offsetTo = 720;
 
-  public version = '1.0.0';
+  public version = '1.0.3';
 
   public timeFormat = 'Local';
 
@@ -51,6 +53,8 @@ export class AppComponent implements OnInit {
 
   public selectMode = 'Monitor';
   public loadingStatus = '';
+
+  public TurboStartUp = true;
 
 
   public lastUpdate: string;
@@ -118,6 +122,7 @@ export class AppComponent implements OnInit {
     cellFlashDelay: 3000
   };
 
+
   constructor(
     private zone: NgZone,
     public globals: GlobalService,
@@ -127,7 +132,9 @@ export class AppComponent implements OnInit {
 
   ) {
 
+    this.version = window.localStorage.getItem('version');
     AppComponent.staticGlobal = globals;
+
     const that = this;
 
     this.components = { dateCellEditor: getDateCellEditor(), readyCellEditor: getTowReadyEditor() };
@@ -346,6 +353,10 @@ export class AppComponent implements OnInit {
       that.logout();
     });
 
+    this.hubService.turboModeComplete.subscribe(() => {
+      that.TurboStartUp = false;
+      AppComponent.TurboStartUp = false;
+    });
 
     this.hubService.configCallBack.subscribe((enable: boolean[]) => {
 
@@ -354,6 +365,8 @@ export class AppComponent implements OnInit {
       that.gridColumnApi.setColumnsVisible(['ReadyEdit'], false);
 
       that.requireLoginForViewOnly = enable[2];
+
+      that.TurboStartUp = enable[3];
 
       // Show the range selector
       if (enable[1]) {
@@ -377,6 +390,12 @@ export class AppComponent implements OnInit {
     this.sortDefault();
   }
   onCellValueChanged(evt: any): void {
+
+    if (this.TurboStartUp){
+      AppComponent.staticGlobal.openModalAlert('Updates Temporarily Disabled', 'Updating values disabled until loading of flight data completes', '', 'sm');
+      alert('Please Reload Grid');
+      return;
+    }
 
     if (evt.column.colId === 'ActualEndEdit') {
       if (moment().isBefore(moment(evt.newValue))) {
@@ -690,7 +709,7 @@ export class AppComponent implements OnInit {
   }
 
   getCSVData(): string {
-    let cb = 'AircraftRegistration,AircraftType,TowingId,Status,ReadyState,FromStand,ToStand,ScheduledStart,ScheduledEnd,ActualStart,ActualEnd,ArrivalFlight,SIBT,DepartureFlight,SOBT\n';
+    let cb = 'ReadyState,AircraftRegistration,AircraftType,ArrivalFlight,SIBT,FromStand,ToStand,Status,ScheduledStart,ScheduledEnd,ActualStart,ActualEnd,DepartureFlight,SOBT,TowingId\n';
 
     for (let i = 0; i < this.numRows; i++) {
       const rowData = this.gridApi.getDisplayedRowAtIndex(i).data;
@@ -710,22 +729,21 @@ export class AppComponent implements OnInit {
         depFlt = rowData.Departure.split(' ')[0];
       }
 
+      cb += rowData.Ready + ',';
       cb += rowData.AircraftRegistration + ',';
       cb += rowData.AircraftType + ',';
-      cb += rowData.TowingID + ',';
-      cb += rowData.Status + ',';
-      cb += rowData.Ready + ',';
+      cb += arrFlt + ',';
+      cb += arrTime + ',';
       cb += rowData.From + ',';
       cb += rowData.To + ',';
+      cb += rowData.Status + ',';
       cb += rowData.ScheduledStart + ',';
       cb += rowData.ScheduledEnd + ',';
       cb += rowData.ActualStart + ',';
       cb += rowData.ActualEnd + ',';
-      cb += arrFlt + ',';
-      cb += arrTime + ',';
       cb += depFlt + ',';
-      cb += depTime + '\n';
-
+      cb += depTime + ',';
+      cb += rowData.TowingID + '\n';
     }
 
     return cb;
@@ -809,6 +827,12 @@ function getDateCellEditor(): any {
       .querySelector('#btOK')
       .addEventListener('click', () => {
 
+        if (AppComponent.TurboStartUp){
+          // tslint:disable-next-line:max-line-length
+          AppComponent.staticGlobal.openModalAlert('Updates Temporarily Disabled', 'Updating values disabled until loading of flight data completes', '', 'sm');
+          params.stopEditing();
+          return;
+        }
         let newValue = moment($('#editorDate').val() + 'T' + $('#editorTime').val() + 'Z').format('YYYY-MM-DDTHH:mm:ssZ');
         if (that.data.PageDateFormat === 'Local') {
           newValue = moment($('#editorDate').val() + 'T' + $('#editorTime').val()).format('YYYY-MM-DDTHH:mm:ss');
@@ -825,8 +849,14 @@ function getDateCellEditor(): any {
     tempElement
       .querySelector('#btClear')
       .addEventListener('click', () => {
-        that.value = null;
-        params.stopEditing();
+        if (AppComponent.TurboStartUp){
+         // tslint:disable-next-line:max-line-length
+         AppComponent.staticGlobal.openModalAlert('Updates Temporarily Disabled', 'Updating values disabled until loading of flight data completes', '', 'sm');
+         params.stopEditing();
+        } else {
+          that.value = null;
+          params.stopEditing();
+        }
       });
     tempElement
       .querySelector('#btEsc')

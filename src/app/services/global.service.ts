@@ -9,8 +9,8 @@ import { GenericAlertComponent } from '../dialogs/generic-alert.component';
 export class GlobalService {
 
   public rangeMode = 'offset';
-  public offsetFrom = -300;
-  public offsetTo = 240;
+  public offsetFrom = -720;
+  public offsetTo = 720;
   public id = null;
   public token = null;
   public userStatus = 'Logged Out';

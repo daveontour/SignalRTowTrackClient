@@ -13,11 +13,11 @@
 
       <label>Scheduled Tow Start From:</label>
       <select name="from" [(ngModel)]='offsetFrom' style="font-size: 12px;">
-        <option value="-720">-12 hours</option>
+        <option value="-720" selected="selected">-12 hours</option>
         <option value="-600">-10 hours</option>
         <option value="-480">-8 hours</option>
         <option value="-360">-6 hours</option>
-        <option value="-300" selected="selected">-5 hours</option>
+        <option value="-300">-5 hours</option>
         <option value="-240">-4 hours</option>
         <option value="-180">-3 hours</option>
         <option value="-120">-2 hours</option>
@@ -36,12 +36,12 @@
         <option value="60">+1 hour</option>
         <option value="120">+2 hour</option>
         <option value="180">+3 hour</option>
-        <option value="240" selected="selected">+4 hour</option>
+        <option value="240" >+4 hour</option>
         <option value="300">+5 hour</option>
         <option value="360">+6 hour</option>
         <option value="480">+8 hour</option>
         <option value="600">+10 hour</option>
-        <option value="720">+12 hour</option>
+        <option value="720" selected="selected">+12 hour</option>
       </select>
       <label style="margin-left: 15px;">Show Completed Tows:</label>
       <input type="checkbox" [(ngModel)]='showCompleted' (change)="setCurrentRange()">
@@ -108,7 +108,8 @@
   <span style="margin-left: 10px; font-size: 14px;color:cadetblue">{{globals.timeZone}}</span>
   <span style="margin-left: 10px; font-size: 14px">User Status:</span>
   <span style="margin-left: 10px; font-size: 14px;"  [ngClass]="{'LoggedIn': globals.userStatus =='Logged In','LoggedOut': globals.userStatus =='Logged Out' || globals.userStatus =='No Access' ,'NoEdit': globals.userStatus =='No Edit Access'}">{{globals.userStatus}}</span>
-  <span style="margin-left: 30px; font-size: 14px;color: orange;">Version {{version}}</span>  
+  <span style="margin-left: 30px; font-size: 14px;color: orange;">Version: {{version}}</span>
+  <span *ngIf="TurboStartUp"  style="margin-left: 10px; font-size: 16px; color: yellow">Tows Loaded. Flight data still being populated</span>
 
 </div>
 

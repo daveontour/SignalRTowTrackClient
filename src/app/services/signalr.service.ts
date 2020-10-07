@@ -28,6 +28,7 @@ export class SignalRService {
   configCallBack = new EventEmitter<boolean[]>();
   loggedIn = new EventEmitter<boolean>();
   loggedOut = new EventEmitter<boolean>();
+  turboModeComplete = new EventEmitter<boolean>();
   forceLogoout = new EventEmitter<any>();
 
   private hubConnection: HubConnection;
@@ -78,6 +79,12 @@ export class SignalRService {
       this.updateReceived.emit(data);
       this.zone.run(() => { });
     });
+
+    this.proxy.on('TurboModeComplete', (data: any) => {
+      this.turboModeComplete.emit(true);
+      this.zone.run(() => { });
+    });
+
     this.proxy.on('Delete', (data: any) => {
       if (that.disableAccess) {
         return;
@@ -215,6 +222,7 @@ export class SignalRService {
     const modaLoadRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Loading Data', 'Please Wait', 'sm', false);
     that.zone.run(() => { });
     this.proxy.invoke('Login', id, token).done((data) => {
+
       modaLoadRef.close();
       that.globals.blinkBeforeStart = data.BlinkBeforeStart;
       if (!data.View && !data.Edit) {
