@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 import {LoginDialogComponent} from './dialogs/login-dialog.component';
+import {LoginADDialogComponent} from './dialogs/loginAD-dialog.component';
 import {ProceedLoadDialogComponent} from './dialogs/proceedload-dialog.component';
 
 import {MatIconModule} from '@angular/material/icon';
@@ -35,6 +36,6 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
   providers: [ GlobalService, SignalRService ],
   bootstrap: [AppComponent],
   exports: [BrowserModule, MatMenuModule, MatIconModule],
-  entryComponents: [ LoginDialogComponent, ProceedLoadDialogComponent, GenericAlertComponent ],
+  entryComponents: [ LoginDialogComponent, LoginADDialogComponent, ProceedLoadDialogComponent, GenericAlertComponent ],
 })
 export class AppModule { }

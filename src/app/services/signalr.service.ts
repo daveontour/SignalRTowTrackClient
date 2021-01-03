@@ -29,6 +29,7 @@ export class SignalRService {
   loggedIn = new EventEmitter<boolean>();
   loggedOut = new EventEmitter<boolean>();
   turboModeComplete = new EventEmitter<boolean>();
+  adLoginResult = new EventEmitter<string>();
   forceLogoout = new EventEmitter<any>();
 
   private hubConnection: HubConnection;
@@ -256,12 +257,40 @@ export class SignalRService {
     });
   }
 
+  public loginAD(id: string, token: string): any {
+    this.globals.id = id;
+    this.globals.token = token;
+    const that = this;
+    const modaLoadRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Loading Data', 'Please Wait', 'sm', false);
+    that.zone.run(() => { });
+    this.proxy.invoke('LoginAD', id, token).done((result: string ) => {
+
+      modaLoadRef.close();
+      that.adLoginResult.emit(result);
+      that.zone.run(() => { });
+    }).fail((error) => {
+      modaLoadRef.close();
+      const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Server Connection Failure', 'Unable to validate Active Directory User', 'sm');
+      console.log('Invocation of Login failed. Error: ' + error);
+      that.adLoginResult.emit('ADSERVEREROR');
+      that.zone.run(() => { });
+    });
+  }
+
   public getConfig(): any {
     const that = this;
     this.proxy.invoke('GetConfig').done((config: boolean[]) => {
+      // param0 = ENABLEREADY
+      // param1 = ENABLERANGESELECT
+      // param2 = LOGIN FOR VIEW ONLY
+      // param3 = IN TURBO STARTUP
+      // param4 = USE AD
+
       that.configCallBack.emit(config);
     }).fail((error: any) => {
-      that.configCallBack.emit([false, false, false]);
+
+
+      that.configCallBack.emit([false, false, false, false, false]);
       console.log('Invocation of Enable Ready failed. Error: ' + error);
     });
   }

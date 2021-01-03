@@ -1,13 +1,14 @@
 import { Component, OnInit, TemplateRef, Input } from '@angular/core';
 import { ChangeDetectorRef } from '@angular/core';
 
-import { NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgZone } from '@angular/core';
 import * as moment from 'moment';
 
 import { SignalRService } from './services/signalr.service';
 import { GlobalService } from './services/global.service';
 import { LoginDialogComponent } from './dialogs/login-dialog.component';
+import { LoginADDialogComponent } from './dialogs/loginAD-dialog.component';
 import { CustomTooltip } from './tooltips/custom-time-tooltip.component';
 import { CustomPlanTooltip } from './tooltips/custom-plan-tooltip.component';
 import { CustomStandTooltip } from './tooltips/custom-stand-tooltip.component';
@@ -31,7 +32,7 @@ export class AppComponent implements OnInit {
   public offsetFrom = -720;
   public offsetTo = 720;
 
-  public version = '1.0.3';
+  public version = '1.1.0';
 
   public timeFormat = 'Local';
 
@@ -54,7 +55,8 @@ export class AppComponent implements OnInit {
   public selectMode = 'Monitor';
   public loadingStatus = '';
 
-  public TurboStartUp = true;
+  public TurboStartUp = false;
+  public UseActiveDirectory = false;
 
 
   public lastUpdate: string;
@@ -141,8 +143,10 @@ export class AppComponent implements OnInit {
     this.getRowNodeId = (d: any) => {
       return d.TowingID;
     };
-    this.frameworkComponents = { customTooltip: CustomTooltip, customPlanTooltip: CustomPlanTooltip,
-       customStandTooltip: CustomStandTooltip };
+    this.frameworkComponents = {
+      customTooltip: CustomTooltip, customPlanTooltip: CustomPlanTooltip,
+      customStandTooltip: CustomStandTooltip
+    };
 
 
     const sec = ((60 - moment().second()) + 5) * 1000;
@@ -293,6 +297,9 @@ export class AppComponent implements OnInit {
     this.hubService.addReceived.subscribe((message: string) => {
       that.addGridRow(message);
     });
+    this.hubService.adLoginResult.subscribe((message: string) => {
+      that.adValidationResult(message);
+    });
     this.hubService.updateReceived.subscribe((message: string) => {
       that.updateGridRow(message);
     });
@@ -367,12 +374,17 @@ export class AppComponent implements OnInit {
       that.requireLoginForViewOnly = enable[2];
 
       that.TurboStartUp = enable[3];
+      that.UseActiveDirectory = enable[4];
 
       // Show the range selector
       if (enable[1]) {
         that.showDateRange = true;
       }
 
+      if (that.UseActiveDirectory){
+        that.openADDialog();
+        return;
+      }
       if (that.requireLoginForViewOnly) {
         $('#loginBtn').show(0);
         $('#logoutBtn').show(0);
@@ -391,11 +403,11 @@ export class AppComponent implements OnInit {
   }
   onCellValueChanged(evt: any): void {
 
-    if (this.TurboStartUp){
-      AppComponent.staticGlobal.openModalAlert('Updates Temporarily Disabled', 'Updating values disabled until loading of flight data completes', '', 'sm');
-      alert('Please Reload Grid');
-      return;
-    }
+    // if (this.TurboStartUp) {
+    //   AppComponent.staticGlobal.openModalAlert('Updates Temporarily Disabled', 'Updating values disabled until loading of flight data completes', '', 'sm');
+    //   alert('Please Reload Grid');
+    //   return;
+    // }
 
     if (evt.column.colId === 'ActualEndEdit') {
       if (moment().isBefore(moment(evt.newValue))) {
@@ -766,26 +778,60 @@ export class AppComponent implements OnInit {
       that.zone.run(() => { });
     });
   }
+    // The login dialog
+    openADDialog(message = ''): any {
+
+      const that = this;
+      const modalRef = this.modalService.open(LoginADDialogComponent, { centered: true, size: 'sm', backdrop: 'static' });
+      modalRef.componentInstance.message = message;
+      modalRef.result.then((result) => {
+        if (result.login) {
+          that.hubService.loginAD(result.id, result.token);
+        } else {
+          that.openADDialog();
+          that.zone.run(() => { });
+        }
+      }, (reason) => {
+        that.openADDialog();
+        that.zone.run(() => { });
+      });
+    }
+
+    adValidationResult(result: string): any {
+      debugger;
+      if (result === 'ADOK'){
+        this.openDialog();
+        return;
+      }
+      if (result === 'ADINVALID'){
+        this.openADDialog('Active  Directory Credentials Invalid');
+        return;
+      }
+      if (result === 'ADSERVEREROR'){
+        this.openADDialog('Unable to connect to Active Directory Server');
+        return;
+      }
+    }
 
   about(): void {
     const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker',
-    'AMS Tow Tracker - SITA MEIA Integration Team', 'Version ' + this.version, 'sm');
+      'AMS Tow Tracker - SITA MEIA Integration Team', 'Version ' + this.version, 'sm');
   }
 }
 
 function getDateCellEditor(): any {
   function DateCellEditor(): any { }
-  DateCellEditor.prototype.getGui = function(): any {
+  DateCellEditor.prototype.getGui = function (): any {
     return this.eGui;
   };
-  DateCellEditor.prototype.getValue = function(): any {
+  DateCellEditor.prototype.getValue = function (): any {
     return this.value;
   };
   // tslint:disable-next-line:only-arrow-functions
-  DateCellEditor.prototype.isPopup = function(): any {
+  DateCellEditor.prototype.isPopup = function (): any {
     return true;
   };
-  DateCellEditor.prototype.init = function(params: any): any {
+  DateCellEditor.prototype.init = function (params: any): any {
     this.value = params.value;
     this.data = params.data;
     this.field = params.colDef.field;
@@ -827,12 +873,12 @@ function getDateCellEditor(): any {
       .querySelector('#btOK')
       .addEventListener('click', () => {
 
-        if (AppComponent.TurboStartUp){
-          // tslint:disable-next-line:max-line-length
-          AppComponent.staticGlobal.openModalAlert('Updates Temporarily Disabled', 'Updating values disabled until loading of flight data completes', '', 'sm');
-          params.stopEditing();
-          return;
-        }
+        // if (AppComponent.TurboStartUp) {
+        //   // tslint:disable-next-line:max-line-length
+        //   AppComponent.staticGlobal.openModalAlert('Updates Temporarily Disabled', 'Updating values disabled until loading of flight data completes', '', 'sm');
+        //   params.stopEditing();
+        //   return;
+        // }
         let newValue = moment($('#editorDate').val() + 'T' + $('#editorTime').val() + 'Z').format('YYYY-MM-DDTHH:mm:ssZ');
         if (that.data.PageDateFormat === 'Local') {
           newValue = moment($('#editorDate').val() + 'T' + $('#editorTime').val()).format('YYYY-MM-DDTHH:mm:ss');
@@ -849,14 +895,15 @@ function getDateCellEditor(): any {
     tempElement
       .querySelector('#btClear')
       .addEventListener('click', () => {
-        if (AppComponent.TurboStartUp){
-         // tslint:disable-next-line:max-line-length
-         AppComponent.staticGlobal.openModalAlert('Updates Temporarily Disabled', 'Updating values disabled until loading of flight data completes', '', 'sm');
-         params.stopEditing();
-        } else {
-          that.value = null;
-          params.stopEditing();
-        }
+        // if (AppComponent.TurboStartUp) {
+        //   // tslint:disable-next-line:max-line-length
+        //   AppComponent.staticGlobal.openModalAlert('Updates Temporarily Disabled', 'Updating values disabled until loading of flight data completes', '', 'sm');
+        //   params.stopEditing();
+        //   return;
+        // }
+        that.value = null;
+        params.stopEditing();
+
       });
     tempElement
       .querySelector('#btEsc')
@@ -871,17 +918,17 @@ function getDateCellEditor(): any {
 
 function getTowReadyEditor(): any {
   function TowReadyCellEditor(): any { }
-  TowReadyCellEditor.prototype.getGui = function(): any {
+  TowReadyCellEditor.prototype.getGui = function (): any {
     return this.eGui;
   };
-  TowReadyCellEditor.prototype.getValue = function(): any {
+  TowReadyCellEditor.prototype.getValue = function (): any {
     return this.value;
   };
   // tslint:disable-next-line:only-arrow-functions
-  TowReadyCellEditor.prototype.isPopup = function(): any {
+  TowReadyCellEditor.prototype.isPopup = function (): any {
     return true;
   };
-  TowReadyCellEditor.prototype.init = function(params: any): any {
+  TowReadyCellEditor.prototype.init = function (params: any): any {
 
     this.value = params.value;
     this.data = params.data;
@@ -919,12 +966,24 @@ function getTowReadyEditor(): any {
     tempElement
       .querySelector('#btOK')
       .addEventListener('click', () => {
+        if (AppComponent.TurboStartUp) {
+          // tslint:disable-next-line:max-line-length
+          AppComponent.staticGlobal.openModalAlert('Updates Temporarily Disabled', 'Updating Ready State disabled until loading of flight data completes', '', 'sm');
+          params.stopEditing();
+          return;
+        }
         that.value = $('#ready').val();
         params.stopEditing();
       });
     tempElement
       .querySelector('#btClear')
       .addEventListener('click', () => {
+        if (AppComponent.TurboStartUp) {
+          // tslint:disable-next-line:max-line-length
+          AppComponent.staticGlobal.openModalAlert('Updates Temporarily Disabled', 'Updating Ready State disabled until loading of flight data completes', '', 'sm');
+          params.stopEditing();
+          return;
+        }
         that.value = null;
         params.stopEditing();
       });
