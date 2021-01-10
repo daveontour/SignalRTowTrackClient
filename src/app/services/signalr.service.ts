@@ -29,6 +29,7 @@ export class SignalRService {
   loggedIn = new EventEmitter<boolean>();
   loggedOut = new EventEmitter<boolean>();
   turboModeComplete = new EventEmitter<boolean>();
+  suicideModeComplete = new EventEmitter<boolean>();
   adLoginResult = new EventEmitter<string>();
   forceLogoout = new EventEmitter<any>();
 
@@ -83,6 +84,11 @@ export class SignalRService {
 
     this.proxy.on('TurboModeComplete', (data: any) => {
       this.turboModeComplete.emit(true);
+      this.zone.run(() => { });
+    });
+
+    this.proxy.on('SuicideModeComplete', (data: any) => {
+      this.suicideModeComplete.emit(true);
       this.zone.run(() => { });
     });
 
@@ -285,12 +291,13 @@ export class SignalRService {
       // param2 = LOGIN FOR VIEW ONLY
       // param3 = IN TURBO STARTUP
       // param4 = USE AD
+      // param5 = SUICIDE MODE
 
       that.configCallBack.emit(config);
     }).fail((error: any) => {
 
 
-      that.configCallBack.emit([false, false, false, false, false]);
+      that.configCallBack.emit([false, false, false, false, false, false]);
       console.log('Invocation of Enable Ready failed. Error: ' + error);
     });
   }

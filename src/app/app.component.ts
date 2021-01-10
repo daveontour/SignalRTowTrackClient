@@ -21,6 +21,7 @@ import { CustomStandTooltip } from './tooltips/custom-stand-tooltip.component';
 export class AppComponent implements OnInit {
   public static staticGlobal: any;
   public static TurboStartUp = true;
+  public static SuicideMode = false;
 
   @Input() content: TemplateRef<string>;
 
@@ -57,6 +58,7 @@ export class AppComponent implements OnInit {
 
   public TurboStartUp = false;
   public UseActiveDirectory = false;
+  public SuicideMode = false;
 
 
   public lastUpdate: string;
@@ -365,6 +367,11 @@ export class AppComponent implements OnInit {
       AppComponent.TurboStartUp = false;
     });
 
+    this.hubService.suicideModeComplete.subscribe(() => {
+      that.SuicideMode = false;
+      AppComponent.SuicideMode = false;
+    });
+
     this.hubService.configCallBack.subscribe((enable: boolean[]) => {
 
       that.enableReady = enable[0];
@@ -375,6 +382,15 @@ export class AppComponent implements OnInit {
 
       that.TurboStartUp = enable[3];
       that.UseActiveDirectory = enable[4];
+      that.SuicideMode = enable[5];
+
+      if (that.SuicideMode){
+        if (confirm('Warning! Loading of Data is incomplete. Please acknowledge you understand the limitiations and wish to proceed')){
+// Do Nothing
+        } else {
+return;
+        }
+      }
 
       // Show the range selector
       if (enable[1]) {
@@ -798,7 +814,7 @@ export class AppComponent implements OnInit {
     }
 
     adValidationResult(result: string): any {
-      debugger;
+
       if (result === 'ADOK'){
         this.openDialog();
         return;
