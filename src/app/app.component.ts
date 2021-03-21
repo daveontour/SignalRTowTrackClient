@@ -310,6 +310,8 @@ export class AppComponent implements OnInit {
       that.loadGrid(message);
     });
     this.hubService.connectionError.subscribe((message: string) => {
+      console.log('Connection Last @ ' + new Date());
+      
       that.status = 'Disconnected';
       that.globals.userStatus = 'Logged Out';
       that.rowData = [];
@@ -337,6 +339,7 @@ export class AppComponent implements OnInit {
     });
 
     this.hubService.loggedIn.subscribe((allow: boolean) => {
+      console.log('Connection Established @ ' + new Date());
       if (allow) {
         that.hubService.getTows(that.offsetFrom, that.offsetTo);
         that.disableLogout = false;
@@ -347,6 +350,11 @@ export class AppComponent implements OnInit {
         that.openDialog();
         this.zone.run(() => { });
       }
+    });
+
+    this.hubService.serverPing.subscribe(() => {
+      console.log('Server Ping Received @ ' + new Date());
+      this.hubService.pong();
     });
 
     this.hubService.loggedOut.subscribe((allow: boolean) => {

@@ -32,6 +32,7 @@ export class SignalRService {
   suicideModeComplete = new EventEmitter<boolean>();
   adLoginResult = new EventEmitter<string>();
   forceLogoout = new EventEmitter<any>();
+  serverPing = new EventEmitter<any>();
 
   private hubConnection: HubConnection;
   private proxy;
@@ -65,6 +66,10 @@ export class SignalRService {
 
     this.proxy.on('ForceLogout', () => {
       this.forceLogoout.emit();
+      this.zone.run(() => { });
+    });
+    this.proxy.on('Ping', () => {
+      this.serverPing.emit();
       this.zone.run(() => { });
     });
     this.proxy.on('Add', (data: any) => {
@@ -219,6 +224,15 @@ export class SignalRService {
       modalRef.close();
       that.globals.openModalAlert('SITA AMS Tow Tracker', 'Error Ready State', error, 'lg');
       console.log('Invocation of UpdateReadyState failed. Error: ' + error);
+    });
+  }
+
+  public pong(): any{
+    const that = this;
+    this.proxy.invoke('Pong').done((result: string ) => {
+      that.zone.run(() => { });
+    }).fail((error) => {
+      that.zone.run(() => { });
     });
   }
 
