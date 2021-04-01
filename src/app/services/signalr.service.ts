@@ -283,10 +283,31 @@ export class SignalRService {
     const that = this;
     const modaLoadRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Loading Data', 'Please Wait', 'sm', false);
     that.zone.run(() => { });
-    this.proxy.invoke('LoginAD', id, token).done((result: string ) => {
+    this.proxy.invoke('LoginADUser', id, token).done((data ) => {
 
       modaLoadRef.close();
-      that.adLoginResult.emit(result);
+      //that.adLoginResult.emit(result);
+      if (!data.View && !data.Edit) {
+        const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Login credentials incorrect or no configured access to Tow Tracker', '', 'sm', true, 'OK');
+        modalRef.result.then((result) => {
+          that.loggedIn.emit(false);
+        });
+        that.disableAccess = true;
+        that.globals.userStatus = 'No Access';
+      } else if (!data.Edit) {
+
+        const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Login Successful. View Access Only', '', 'sm');
+        modalRef.result.then((result) => {
+          that.disableAccess = false;
+          that.loggedIn.emit(true);
+        });
+        that.globals.userStatus = 'No Edit Access';
+      } else if (data.Edit) {
+        that.disableAccess = false;
+        that.loggedIn.emit(true);
+        that.allowActual.emit(true);
+        that.globals.userStatus = 'Logged In';
+      }
       that.zone.run(() => { });
     }).fail((error) => {
       modaLoadRef.close();

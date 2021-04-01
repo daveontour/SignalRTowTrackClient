@@ -347,7 +347,11 @@ export class AppComponent implements OnInit {
       } else {
         that.disableLogout = true;
         that.disableLogin = false;
-        that.openDialog();
+        if (that.UseActiveDirectory){
+          that.openADDialog();
+        } else {
+          that.openDialog();
+        }
         this.zone.run(() => { });
       }
     });
@@ -359,7 +363,11 @@ export class AppComponent implements OnInit {
 
     this.hubService.loggedOut.subscribe((allow: boolean) => {
       if (that.requireLoginForViewOnly) {
-        that.openDialog();
+        if (that.UseActiveDirectory){
+          that.openADDialog();
+        } else {
+          that.openDialog();
+        }
       }
       that.rowData = [];
       that.disableLogout = true;
