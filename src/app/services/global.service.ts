@@ -14,6 +14,7 @@ export class GlobalService {
   public id = null;
   public token = null;
   public userStatus = 'Logged Out';
+  public username: string;
   public timeZone = 'Local';
   public blinkBeforeStart: number;
   constructor(private modalService: NgbModal) { }

@@ -236,6 +236,9 @@ export class SignalRService {
     });
   }
 
+  /*
+  Login user when Active Directory use is NOT used. Uses AMS local users authrntication
+  */
   public login(id: string, token: string): any {
     this.globals.id = id;
     this.globals.token = token;
@@ -253,6 +256,7 @@ export class SignalRService {
         });
         that.disableAccess = true;
         that.globals.userStatus = 'No Access';
+        that.globals.username = "-";
       } else if (!data.Edit) {
 
         const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Login Successful. View Access Only', '', 'sm');
@@ -261,11 +265,13 @@ export class SignalRService {
           that.loggedIn.emit(true);
         });
         that.globals.userStatus = 'No Edit Access';
+        this.globals.username = data.User;
       } else if (data.Edit) {
         that.disableAccess = false;
         that.loggedIn.emit(true);
         that.allowActual.emit(true);
         that.globals.userStatus = 'Logged In';
+        that.globals.username = data.User;
       }
       that.zone.run(() => { });
     }).fail((error) => {
@@ -273,10 +279,14 @@ export class SignalRService {
       const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Server Connection Failure', 'Unable to login', 'sm');
       console.log('Invocation of Login failed. Error: ' + error);
       that.allowActual.emit(false);
+      that.globals.username = "-";
       that.zone.run(() => { });
     });
   }
 
+    /*
+  Login user with Active Directory Authentication
+  */
   public loginAD(id: string, token: string): any {
     this.globals.id = id;
     this.globals.token = token;
@@ -286,7 +296,7 @@ export class SignalRService {
     this.proxy.invoke('LoginADUser', id, token).done((data ) => {
 
       modaLoadRef.close();
-      //that.adLoginResult.emit(result);
+
       if (!data.View && !data.Edit) {
         const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Login credentials incorrect or no configured access to Tow Tracker', '', 'sm', true, 'OK');
         modalRef.result.then((result) => {
@@ -294,11 +304,13 @@ export class SignalRService {
         });
         that.disableAccess = true;
         that.globals.userStatus = 'No Access';
+        that.globals.username = "-";
       } else if (!data.Edit) {
 
         const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Login Successful. View Access Only', '', 'sm');
         modalRef.result.then((result) => {
           that.disableAccess = false;
+          this.globals.username = data.User;
           that.loggedIn.emit(true);
         });
         that.globals.userStatus = 'No Edit Access';
@@ -306,6 +318,7 @@ export class SignalRService {
         that.disableAccess = false;
         that.loggedIn.emit(true);
         that.allowActual.emit(true);
+        that.globals.username = data.User;
         that.globals.userStatus = 'Logged In';
       }
       that.zone.run(() => { });
@@ -313,6 +326,7 @@ export class SignalRService {
       modaLoadRef.close();
       const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Server Connection Failure', 'Unable to validate Active Directory User', 'sm');
       console.log('Invocation of Login failed. Error: ' + error);
+      that.globals.username = "-";
       that.adLoginResult.emit('ADSERVEREROR');
       that.zone.run(() => { });
     });

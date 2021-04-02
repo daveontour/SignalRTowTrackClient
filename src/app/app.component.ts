@@ -314,6 +314,7 @@ export class AppComponent implements OnInit {
       
       that.status = 'Disconnected';
       that.globals.userStatus = 'Logged Out';
+      that.globals.username = '-';
       that.rowData = [];
       that.numRows = 0;
       this.lastUpdate = moment().format('HH:mm:ss');
@@ -373,6 +374,7 @@ export class AppComponent implements OnInit {
       that.disableLogout = true;
       that.disableLogin = false;
       that.loadingStatus = '';
+      that.globals.username  ='-';
     });
     this.hubService.forceLogoout.subscribe(() => {
       that.logout();
