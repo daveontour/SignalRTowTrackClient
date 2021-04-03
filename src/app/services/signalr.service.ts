@@ -29,6 +29,7 @@ export class SignalRService {
   loggedIn = new EventEmitter<boolean>();
   loggedOut = new EventEmitter<boolean>();
   turboModeComplete = new EventEmitter<boolean>();
+  adserverFailure = new EventEmitter<boolean>();
   suicideModeComplete = new EventEmitter<boolean>();
   adLoginResult = new EventEmitter<string>();
   forceLogoout = new EventEmitter<any>();
@@ -296,6 +297,18 @@ export class SignalRService {
     this.proxy.invoke('LoginADUser', id, token).done((data ) => {
 
       modaLoadRef.close();
+
+      if (data.ADStatus == "BYPASS"){
+        const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Active Directory validation error. Try using AMS local user credentials', '', 'sm', true, 'OK');
+        modalRef.result.then((result) => {
+          that.adserverFailure.emit(true);
+        });
+        that.disableAccess = true;
+        that.globals.userStatus = 'No Access';
+        that.globals.username = "-";
+        that.zone.run(() => { });
+        return;      
+      }
 
       if (!data.View && !data.Edit) {
         const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Login credentials incorrect or no configured access to Tow Tracker', '', 'sm', true, 'OK');

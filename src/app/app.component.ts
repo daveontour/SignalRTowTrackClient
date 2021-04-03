@@ -376,6 +376,19 @@ export class AppComponent implements OnInit {
       that.loadingStatus = '';
       that.globals.username  ='-';
     });
+
+    this.hubService.adserverFailure.subscribe((allow: boolean) => {
+      // Active Directory authentication has been enabled, but the AD server is not available
+      // and the option to allow local logon on active directoy failure has been enabled
+      that.openDialog();
+      that.rowData = [];
+      that.disableLogout = true;
+      that.disableLogin = false;
+      that.loadingStatus = '';
+      that.globals.username  ='-';
+      this.zone.run(() => { });
+    });
+
     this.hubService.forceLogoout.subscribe(() => {
       that.logout();
     });
