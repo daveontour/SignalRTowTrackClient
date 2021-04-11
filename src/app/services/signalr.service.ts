@@ -70,6 +70,7 @@ export class SignalRService {
       this.zone.run(() => { });
     });
     this.proxy.on('Ping', () => {
+      debugger;
       this.serverPing.emit();
       this.zone.run(() => { });
     });
@@ -230,6 +231,7 @@ export class SignalRService {
 
   public pong(): any{
     const that = this;
+    debugger;
     this.proxy.invoke('Pong').done((result: string ) => {
       that.zone.run(() => { });
     }).fail((error) => {
