@@ -20,7 +20,7 @@ import { CustomStandTooltip } from './tooltips/custom-stand-tooltip.component';
 })
 export class AppComponent implements OnInit {
   public static staticGlobal: any;
-  public static TurboStartUp = true;
+  public static TurboStartUp = false;
   public static SuicideMode = false;
 
   @Input() content: TemplateRef<string>;
@@ -412,9 +412,12 @@ export class AppComponent implements OnInit {
       that.requireLoginForViewOnly = enable[2];
 
       that.TurboStartUp = enable[3];
+      AppComponent.TurboStartUp = enable[3];
       that.UseActiveDirectory = enable[4];
       that.SuicideMode = enable[5];
+      AppComponent.SuicideMode = enable[5];
 
+     
       if (that.SuicideMode){
         if (confirm('Warning! Loading of Data is incomplete. Please acknowledge you understand the limitiations and wish to proceed')){
 // Do Nothing
@@ -982,6 +985,7 @@ function getTowReadyEditor(): any {
     this.field = params.colDef.field;
     const tempElement = document.createElement('div');
 
+  
     if (this.value === 'R' || this.value === '' || this.value === null) {
       tempElement.innerHTML =
         '<div class="yearSelect">' +
@@ -1015,7 +1019,7 @@ function getTowReadyEditor(): any {
       .addEventListener('click', () => {
         if (AppComponent.TurboStartUp) {
           // tslint:disable-next-line:max-line-length
-          AppComponent.staticGlobal.openModalAlert('Updates Temporarily Disabled', 'Updating Ready State disabled until loading of flight data completes', '', 'sm');
+          AppComponent.staticGlobal.openModalAlert('Updates Temporarily Disabled', 'Updating Ready State disabled until loading of flight data complete', '', 'sm');
           params.stopEditing();
           return;
         }
@@ -1027,7 +1031,7 @@ function getTowReadyEditor(): any {
       .addEventListener('click', () => {
         if (AppComponent.TurboStartUp) {
           // tslint:disable-next-line:max-line-length
-          AppComponent.staticGlobal.openModalAlert('Updates Temporarily Disabled', 'Updating Ready State disabled until loading of flight data completes', '', 'sm');
+          AppComponent.staticGlobal.openModalAlert('Updates Temporarily Disabled', 'Updating Ready State disabled until loading of flight data complete', '', 'sm');
           params.stopEditing();
           return;
         }
