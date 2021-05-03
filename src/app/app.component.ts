@@ -60,6 +60,8 @@ export class AppComponent implements OnInit {
   public UseActiveDirectory = false;
   public SuicideMode = false;
 
+  public pingDate: any;
+
 
   public lastUpdate: string;
   public gridApi: any;
@@ -163,6 +165,11 @@ export class AppComponent implements OnInit {
     this.hubService.connectionEstablished.subscribe((connected: boolean) => {
       this.status = 'Connected';
       this.hubService.getConfig();
+    });
+
+    this.hubService.connectionReEstablished.subscribe((connected: boolean) => {
+      this.status = 'Connected';
+      console.log("Client reconnected")
     });
 
   }
@@ -310,16 +317,17 @@ export class AppComponent implements OnInit {
       that.loadGrid(message);
     });
     this.hubService.connectionError.subscribe((message: string) => {
-      console.log('Connection Last @ ' + new Date());
+      console.log('Connection Lost @ ' + new Date());
+      this.hubService.reStartConnection();
       
-      that.status = 'Disconnected';
-      that.globals.userStatus = 'Logged Out';
-      that.globals.username = '-';
-      that.rowData = [];
-      that.numRows = 0;
-      this.lastUpdate = moment().format('HH:mm:ss');
-      const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Connection to host lost', 'Please try reload this page', 'sm');
-      that.zone.run(() => { });
+      // that.status = 'Disconnected';
+      // that.globals.userStatus = 'Logged Out';
+      // that.globals.username = '-';
+      // that.rowData = [];
+      // that.numRows = 0;
+      // this.lastUpdate = moment().format('HH:mm:ss');
+      // const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Connection to host lost', 'Please try reload this page', 'sm');
+      // that.zone.run(() => { });
     });
     this.hubService.connectionEstablishing.subscribe((message: string) => {
       that.status = 'Connecting';
@@ -355,11 +363,6 @@ export class AppComponent implements OnInit {
         }
         this.zone.run(() => { });
       }
-    });
-
-    this.hubService.serverPing.subscribe(() => {
-      console.log('Server Ping Received @ ' + new Date());
-      this.hubService.pong();
     });
 
     this.hubService.loggedOut.subscribe((allow: boolean) => {
