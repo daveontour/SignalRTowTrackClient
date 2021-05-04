@@ -60,9 +60,6 @@ export class AppComponent implements OnInit {
   public UseActiveDirectory = false;
   public SuicideMode = false;
 
-  public pingDate: any;
-
-
   public lastUpdate: string;
   public gridApi: any;
   public gridColumnApi: any;
@@ -164,6 +161,8 @@ export class AppComponent implements OnInit {
 
     this.hubService.connectionEstablished.subscribe((connected: boolean) => {
       this.status = 'Connected';
+
+      //GetConfig collects config info and then firesthe event which will open the login dialogs
       this.hubService.getConfig();
     });
 
@@ -319,7 +318,7 @@ export class AppComponent implements OnInit {
     this.hubService.connectionError.subscribe((message: string) => {
       console.log('Connection Lost @ ' + new Date());
       this.hubService.reStartConnection();
-      
+
       // that.status = 'Disconnected';
       // that.globals.userStatus = 'Logged Out';
       // that.globals.username = '-';
@@ -356,7 +355,7 @@ export class AppComponent implements OnInit {
       } else {
         that.disableLogout = true;
         that.disableLogin = false;
-        if (that.UseActiveDirectory){
+        if (that.UseActiveDirectory) {
           that.openADDialog();
         } else {
           that.openDialog();
@@ -367,7 +366,7 @@ export class AppComponent implements OnInit {
 
     this.hubService.loggedOut.subscribe((allow: boolean) => {
       if (that.requireLoginForViewOnly) {
-        if (that.UseActiveDirectory){
+        if (that.UseActiveDirectory) {
           that.openADDialog();
         } else {
           that.openDialog();
@@ -377,7 +376,7 @@ export class AppComponent implements OnInit {
       that.disableLogout = true;
       that.disableLogin = false;
       that.loadingStatus = '';
-      that.globals.username  ='-';
+      that.globals.username = '-';
     });
 
     this.hubService.adserverFailure.subscribe((allow: boolean) => {
@@ -388,7 +387,7 @@ export class AppComponent implements OnInit {
       that.disableLogout = true;
       that.disableLogin = false;
       that.loadingStatus = '';
-      that.globals.username  ='-';
+      that.globals.username = '-';
       this.zone.run(() => { });
     });
 
@@ -420,12 +419,12 @@ export class AppComponent implements OnInit {
       that.SuicideMode = enable[5];
       AppComponent.SuicideMode = enable[5];
 
-     
-      if (that.SuicideMode){
-        if (confirm('Warning! Loading of Data is incomplete. Please acknowledge you understand the limitiations and wish to proceed')){
-// Do Nothing
+
+      if (that.SuicideMode) {
+        if (confirm('Warning! Loading of Data is incomplete. Please acknowledge you understand the limitiations and wish to proceed')) {
+          // Do Nothing
         } else {
-return;
+          return;
         }
       }
 
@@ -434,7 +433,7 @@ return;
         that.showDateRange = true;
       }
 
-      if (that.UseActiveDirectory){
+      if (that.UseActiveDirectory) {
         that.openADDialog();
         return;
       }
@@ -831,40 +830,40 @@ return;
       that.zone.run(() => { });
     });
   }
-    // The login dialog
-    openADDialog(message = ''): any {
+  // The login dialog
+  openADDialog(message = ''): any {
 
-      const that = this;
-      const modalRef = this.modalService.open(LoginADDialogComponent, { centered: true, size: 'sm', backdrop: 'static' });
-      modalRef.componentInstance.message = message;
-      modalRef.result.then((result) => {
-        if (result.login) {
-          that.hubService.loginAD(result.id, result.token);
-        } else {
-          that.openADDialog();
-          that.zone.run(() => { });
-        }
-      }, (reason) => {
+    const that = this;
+    const modalRef = this.modalService.open(LoginADDialogComponent, { centered: true, size: 'sm', backdrop: 'static' });
+    modalRef.componentInstance.message = message;
+    modalRef.result.then((result) => {
+      if (result.login) {
+        that.hubService.loginAD(result.id, result.token);
+      } else {
         that.openADDialog();
         that.zone.run(() => { });
-      });
-    }
+      }
+    }, (reason) => {
+      that.openADDialog();
+      that.zone.run(() => { });
+    });
+  }
 
-    adValidationResult(result: string): any {
+  adValidationResult(result: string): any {
 
-      if (result === 'ADOK'){
-        this.openDialog();
-        return;
-      }
-      if (result === 'ADINVALID'){
-        this.openADDialog('Active  Directory Credentials Invalid');
-        return;
-      }
-      if (result === 'ADSERVEREROR'){
-        this.openADDialog('Unable to connect to Active Directory Server');
-        return;
-      }
+    if (result === 'ADOK') {
+      this.openDialog();
+      return;
     }
+    if (result === 'ADINVALID') {
+      this.openADDialog('Active  Directory Credentials Invalid');
+      return;
+    }
+    if (result === 'ADSERVEREROR') {
+      this.openADDialog('Unable to connect to Active Directory Server');
+      return;
+    }
+  }
 
   about(): void {
     const modalRef = this.globals.openModalAlert('SITA AMS Tow Tracker',
@@ -988,7 +987,7 @@ function getTowReadyEditor(): any {
     this.field = params.colDef.field;
     const tempElement = document.createElement('div');
 
-  
+
     if (this.value === 'R' || this.value === '' || this.value === null) {
       tempElement.innerHTML =
         '<div class="yearSelect">' +

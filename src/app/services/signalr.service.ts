@@ -469,7 +469,7 @@ Login user with Active Directory Authentication
 
       modaLoadRef.close();
 
-      debugger;
+ 
       if (data.ADStatus == "BYPASS") {
         const modalRef = that.globals.openModalAlert('SITA AMS Tow Tracker', 'Active Directory validation error. Try using AMS local user credentials', '', 'sm', true, 'OK');
         modalRef.result.then((result) => {
